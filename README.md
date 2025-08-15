@@ -2,8 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/yourusername/jira-download/actions)
-[![Coverage](https://img.shields.io/badge/coverage-87%25-green)](https://github.com/yourusername/jira-download/actions)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/chrisbyboston/jira-download/actions)
+[![Coverage](https://img.shields.io/badge/coverage-87%25-green)](https://github.com/chrisbyboston/jira-download/actions)
 
 A command-line tool that exports Jira Cloud issues into markdown files with all attachments downloaded locally and referenced inline.
 
@@ -27,7 +27,7 @@ pip install jira-download
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/jira-download.git
+git clone https://github.com/chrisbyboston/jira-download.git
 cd jira-download
 ```
 

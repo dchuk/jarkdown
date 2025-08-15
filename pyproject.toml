@@ -9,10 +9,10 @@ description = "Export Jira Cloud issues to Markdown with attachments"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Chris Reynolds", email = "your.email@example.com"}
+    {name = "Chris Reynolds", email = "chris@chrisbyboston.com"}
 ]
 maintainers = [
-    {name = "Chris Reynolds", email = "your.email@example.com"}
+    {name = "Chris Reynolds", email = "chris@chrisbyboston.com"}
 ]
 requires-python = ">=3.8"
 classifiers = [
@@ -39,10 +39,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/jira-download"
-Documentation = "https://github.com/yourusername/jira-download#readme"
-Repository = "https://github.com/yourusername/jira-download.git"
-Issues = "https://github.com/yourusername/jira-download/issues"
+Homepage = "https://github.com/chrisbyboston/jira-download"
+Documentation = "https://github.com/chrisbyboston/jira-download#readme"
+Repository = "https://github.com/chrisbyboston/jira-download.git"
+Issues = "https://github.com/chrisbyboston/jira-download/issues"
 
 [project.scripts]
 jira-download = "jira_download:main"
