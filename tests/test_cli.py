@@ -8,7 +8,7 @@ from io import StringIO
 import pytest
 import requests
 
-from jira_download import main
+from jira_download_pkg import main
 
 
 @pytest.fixture
@@ -139,24 +139,21 @@ class TestCLI:
                 assert os.path.exists(custom_output / 'TEST-789')
                 assert os.path.exists(custom_output / 'TEST-789' / 'TEST-789.md')
     
-    def test_missing_environment_variables(self, tmp_path):
+    def test_missing_environment_variables(self, tmp_path, caplog):
         """Verify error when environment variables are missing"""
         # Clear Jira environment variables and patch load_dotenv to do nothing
         clean_env = {k: v for k, v in os.environ.items() if not k.startswith('JIRA_')}
         
         with patch.dict(os.environ, clean_env, clear=True):
-            with patch('jira_download.load_dotenv'):  # Mock load_dotenv to prevent loading any .env files
+            with patch('jira_download_pkg.jira_download.load_dotenv'):  # Mock load_dotenv to prevent loading any .env files
                 with patch('sys.argv', ['jira-download', 'TEST-123']):
-                    # Capture stderr
-                    with patch('sys.stderr', new=StringIO()) as mock_stderr:
-                        with pytest.raises(SystemExit) as exc_info:
-                            main()
-                        
-                        assert exc_info.value.code != 0
-                        stderr_output = mock_stderr.getvalue()
-                        assert 'Configuration error' in stderr_output or 'Missing' in stderr_output
+                    with pytest.raises(SystemExit) as exc_info:
+                        main()
+                    
+                    assert exc_info.value.code != 0
+                    assert 'Missing required environment variables' in caplog.text
     
-    def test_invalid_issue_key_404(self, mock_env, mocker, tmp_path):
+    def test_invalid_issue_key_404(self, mock_env, mocker, tmp_path, caplog):
         """Verify 404 error handling"""
         mock_session = Mock()
         mock_get = Mock()
@@ -169,15 +166,13 @@ class TestCLI:
         with patch('requests.Session', return_value=mock_session):
             with patch.dict(os.environ, mock_env):
                 with patch('sys.argv', ['jira-download', 'INVALID-999']):
-                    with patch('sys.stderr', new=StringIO()) as mock_stderr:
-                        with pytest.raises(SystemExit) as exc_info:
-                            main()
-                        
-                        assert exc_info.value.code != 0
-                        stderr_output = mock_stderr.getvalue()
-                        assert 'not found' in stderr_output.lower() or '404' in stderr_output
+                    with pytest.raises(SystemExit) as exc_info:
+                        main()
+                    
+                    assert exc_info.value.code != 0
+                    assert 'not found' in caplog.text.lower() or '404' in caplog.text
     
-    def test_invalid_credentials_401(self, mocker, tmp_path):
+    def test_invalid_credentials_401(self, mocker, tmp_path, caplog):
         """Verify 401 authentication error"""
         mock_session = Mock()
         mock_get = Mock()
@@ -196,13 +191,11 @@ class TestCLI:
         with patch('requests.Session', return_value=mock_session):
             with patch.dict(os.environ, bad_env):
                 with patch('sys.argv', ['jira-download', 'TEST-123']):
-                    with patch('sys.stderr', new=StringIO()) as mock_stderr:
-                        with pytest.raises(SystemExit) as exc_info:
-                            main()
-                        
-                        assert exc_info.value.code != 0
-                        stderr_output = mock_stderr.getvalue()
-                        assert 'authentication' in stderr_output.lower() or '401' in stderr_output
+                    with pytest.raises(SystemExit) as exc_info:
+                        main()
+                    
+                    assert exc_info.value.code != 0
+                    assert 'authentication' in caplog.text.lower() or '401' in caplog.text
     
     def test_verbose_flag(self, mock_env, issue_no_description, mocker):
         """Test verbose flag provides additional output"""

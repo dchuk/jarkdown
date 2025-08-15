@@ -3,7 +3,7 @@
 import logging
 from pathlib import Path
 
-from exceptions import AttachmentDownloadError
+from .exceptions import AttachmentDownloadError
 
 
 class AttachmentHandler:
