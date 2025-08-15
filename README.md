@@ -35,16 +35,15 @@ cd jira-download
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -e ".[dev]"
 ```
 
 3. Set up environment variables:
 
-Create a `.env` file with your Jira credentials:
-```
-JIRA_DOMAIN=your-company.atlassian.net
-JIRA_EMAIL=your-email@company.com
-JIRA_API_TOKEN=your-api-token
+Copy the example configuration and fill in your Jira credentials:
+```bash
+cp .env.example .env
+# Edit .env with your actual values
 ```
 
 To get a Jira API token:

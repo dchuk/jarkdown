@@ -35,12 +35,14 @@ MANIFEST
 *.swo
 .DS_Store
 
-# Test outputs
+# Test outputs and downloaded issues
 AI-*/
 USAA-*/
 LFG-*/
 BP-*/
 SA-*/
+TEST-*/
+PROJ-*/
 *-[0-9]*/
 
 # Test files (but not in tests/ directory)
