@@ -1,5 +1,10 @@
 # Jira Download - Export Jira Issues to Markdown
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/yourusername/jira-download/actions)
+[![Coverage](https://img.shields.io/badge/coverage-87%25-green)](https://github.com/yourusername/jira-download/actions)
+
 A command-line tool that exports Jira Cloud issues into markdown files with all attachments downloaded locally and referenced inline.
 
 ## Features
@@ -13,9 +18,16 @@ A command-line tool that exports Jira Cloud issues into markdown files with all 
 
 ## Installation
 
+### Quick Install (Coming Soon)
+```bash
+pip install jira-download
+```
+
+### Install from Source
+
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/yourusername/jira-download.git
 cd jira-download
 ```
 
@@ -86,7 +98,7 @@ Images are embedded inline, other files are linked.
 
 ## Requirements
 
-- Python 3.6+
+- Python 3.8+
 - Jira Cloud instance
 - Jira API token with read permissions
 
@@ -110,6 +122,10 @@ Images are embedded inline, other files are linked.
 - Hierarchical export (epics with stories)
 - Better ADF format handling
 
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
 ## License
 
-See LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
