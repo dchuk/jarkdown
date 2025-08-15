@@ -55,7 +55,7 @@ dev = [
 ]
 
 [tool.setuptools]
-py-modules = ["jira_download"]
+py-modules = ["jira_download", "jira_api_client", "attachment_handler", "markdown_converter", "exceptions"]
 
 [tool.setuptools.packages.find]
 include = ["jira_download*"]
