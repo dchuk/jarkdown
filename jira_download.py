@@ -107,19 +107,19 @@ Environment variables:
     # Load environment variables
     load_dotenv()
     
-    # Get credentials from environment
-    domain = os.getenv('JIRA_DOMAIN')
-    email = os.getenv('JIRA_EMAIL')
-    api_token = os.getenv('JIRA_API_TOKEN')
-    
-    # Validate credentials
-    if not all([domain, email, api_token]):
-        print("Error: Missing required environment variables.", file=sys.stderr)
-        print("Please set JIRA_DOMAIN, JIRA_EMAIL, and JIRA_API_TOKEN", file=sys.stderr)
-        sys.exit(1)
-    
     # Export the issue
     try:
+        # Get credentials from environment
+        domain = os.getenv('JIRA_DOMAIN')
+        email = os.getenv('JIRA_EMAIL')
+        api_token = os.getenv('JIRA_API_TOKEN')
+        
+        # Validate credentials
+        if not all([domain, email, api_token]):
+            raise ConfigurationError(
+                "Missing required environment variables. "
+                "Please set JIRA_DOMAIN, JIRA_EMAIL, and JIRA_API_TOKEN"
+            )
         api_client = JiraApiClient(domain, email, api_token)
         export_issue(api_client, args.issue_key, args.output)
         

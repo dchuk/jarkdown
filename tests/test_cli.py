@@ -66,12 +66,8 @@ class TestCLI:
                 try:
                     # Mock sys.argv for in-process execution
                     with patch('sys.argv', ['jira-download', 'TEST-123']):
-                        # Capture exit to prevent test from exiting
-                        with pytest.raises(SystemExit) as exc_info:
-                            main()
-                    
-                    # Check that the command succeeded
-                    assert exc_info.value.code == 0 or exc_info.value.code is None
+                        # Call main directly - successful execution doesn't raise SystemExit
+                        main()
                     
                     # Check that directory was created
                     assert os.path.exists('TEST-123')
@@ -105,16 +101,14 @@ class TestCLI:
                 
                 try:
                     with patch('sys.argv', ['jira-download', 'TEST-123']):
-                        with pytest.raises(SystemExit) as exc_info:
-                            main()
-                    
-                    assert exc_info.value.code == 0 or exc_info.value.code is None
+                        # Call main directly - successful execution doesn't raise SystemExit
+                        main()
                     
                     # Read and verify markdown content
                     with open('TEST-123/TEST-123.md', 'r') as f:
                         content = f.read()
                     
-                    assert '# TEST-123: Test Issue with Attachments' in content
+                    assert '# [TEST-123](https://example.atlassian.net/browse/TEST-123): Test Issue with Attachments' in content
                     assert '**Type:** Task' in content
                     assert '**Status:** To Do' in content
                     assert '## Description' in content
@@ -138,10 +132,8 @@ class TestCLI:
                 custom_output = tmp_path / 'custom_output'
                 
                 with patch('sys.argv', ['jira-download', 'TEST-789', '--output', str(custom_output)]):
-                    with pytest.raises(SystemExit) as exc_info:
-                        main()
-                
-                assert exc_info.value.code == 0 or exc_info.value.code is None
+                    # Call main directly - successful execution doesn't raise SystemExit
+                    main()
                 
                 # Check that files were created in custom directory
                 assert os.path.exists(custom_output / 'TEST-789')
@@ -149,19 +141,20 @@ class TestCLI:
     
     def test_missing_environment_variables(self, tmp_path):
         """Verify error when environment variables are missing"""
-        # Clear Jira environment variables
+        # Clear Jira environment variables and patch load_dotenv to do nothing
         clean_env = {k: v for k, v in os.environ.items() if not k.startswith('JIRA_')}
         
         with patch.dict(os.environ, clean_env, clear=True):
-            with patch('sys.argv', ['jira-download', 'TEST-123']):
-                # Capture stderr
-                with patch('sys.stderr', new=StringIO()) as mock_stderr:
-                    with pytest.raises(SystemExit) as exc_info:
-                        main()
-                    
-                    assert exc_info.value.code != 0
-                    stderr_output = mock_stderr.getvalue()
-                    assert 'Error' in stderr_output or 'Missing' in stderr_output
+            with patch('jira_download.load_dotenv'):  # Mock load_dotenv to prevent loading any .env files
+                with patch('sys.argv', ['jira-download', 'TEST-123']):
+                    # Capture stderr
+                    with patch('sys.stderr', new=StringIO()) as mock_stderr:
+                        with pytest.raises(SystemExit) as exc_info:
+                            main()
+                        
+                        assert exc_info.value.code != 0
+                        stderr_output = mock_stderr.getvalue()
+                        assert 'Configuration error' in stderr_output or 'Missing' in stderr_output
     
     def test_invalid_issue_key_404(self, mock_env, mocker, tmp_path):
         """Verify 404 error handling"""
@@ -225,8 +218,5 @@ class TestCLI:
             with patch.dict(os.environ, mock_env):
                 with patch('sys.argv', ['jira-download', 'TEST-456', '--verbose']):
                     # Since verbose affects logging level, we can't easily test the output
-                    # Just verify the command succeeds
-                    with pytest.raises(SystemExit) as exc_info:
-                        main()
-                    
-                    assert exc_info.value.code == 0 or exc_info.value.code is None
+                    # Just verify the command succeeds without raising SystemExit
+                    main()
