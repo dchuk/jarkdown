@@ -11,7 +11,7 @@ The project is written in Python and uses the following main technologies:
 *   **`python-dotenv`**: For managing environment variables for Jira credentials.
 *   **`pytest`**: For testing the application.
 
-The application is structured around a `JiraDownloader` class, which encapsulates the logic for fetching, downloading, and converting Jira issues. The command-line interface is handled in the `main` function, which uses `argparse` to parse command-line arguments.
+The application's logic is encapsulated in the `export_issue` function, which coordinates between three main components: `JiraApiClient` for API communication, `AttachmentHandler` for downloading attachments, and `MarkdownConverter` for converting HTML to Markdown. The command-line interface is handled in the `main` function, which uses `argparse` to parse command-line arguments.
 
 ## Building and Running
 
@@ -37,7 +37,7 @@ The application is structured around a `JiraDownloader` class, which encapsulate
 
 3.  **Install dependencies:**
     ```bash
-    pip install -r requirements.txt
+    pip install .
     ```
 
 4.  **Set up environment variables:**
@@ -73,7 +73,7 @@ You can also specify an output directory:
 The project uses `pytest` for testing. To run the tests, first install the development dependencies:
 
 ```bash
-pip install -r requirements.txt -e .[dev]
+pip install -e .[dev]
 ```
 
 Then run the tests:
@@ -84,7 +84,7 @@ pytest
 
 ## Development Conventions
 
-*   **Testing**: The project has a comprehensive test suite using `pytest`. Tests are located in the `tests` directory and are split into end-to-end CLI tests (`test_cli.py`) and unit tests for the `JiraDownloader` class (`test_jira_downloader.py`). The tests use mock data from the `tests/data` directory to simulate API responses.
+*   **Testing**: The project has a comprehensive test suite using `pytest`. Tests are located in the `tests` directory and are split into end-to-end CLI tests (`test_cli.py`) and component tests (`test_components.py`). The tests use mock data from the `tests/data` directory to simulate API responses.
 *   **Code Style**: The code follows standard Python conventions (PEP 8).
-*   **Dependencies**: Project dependencies are managed in `requirements.txt` and `pyproject.toml`.
+*   **Dependencies**: Project dependencies are managed in `pyproject.toml`.
 *   **CI/CD**: The project has a CI workflow defined in `.github/workflows/ci.yml` that runs tests on every push and pull request.
