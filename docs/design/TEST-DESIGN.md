@@ -1,0 +1,122 @@
+# Jira Ticket to Markdown Exporter – Test Design Document
+
+## 1. Introduction
+
+This document outlines the testing strategy for the `jira-download` command-line tool. The goal is to ensure the tool is robust, reliable, and functions as specified in the Technical Design Document. This plan covers the testing framework, test structure, and a comprehensive set of test cases to validate the application's functionality.
+
+## 2. Testing Framework and Tools
+
+- **Framework:** `pytest` will be used as the primary testing framework due to its simplicity, powerful features (like fixtures), and extensive plugin ecosystem.
+- **Mocking:** The `pytest-mock` plugin (which wraps the standard `unittest.mock` library) will be used to mock external dependencies, primarily the Jira API (via the `requests` library). This allows for testing application logic in isolation without making actual network calls.
+- **Test Coverage:** The `pytest-cov` plugin will be used to measure the effectiveness of our tests by generating code coverage reports. Our goal is to achieve a high level of coverage (>90%) for the core application logic.
+
+To install the required testing dependencies:
+```bash
+pip install pytest pytest-mock pytest-cov
+```
+
+## 3. Test Structure and Location
+
+All tests will reside in a `tests/` directory at the root of the project. This keeps test code separate from the application code.
+
+The proposed structure is as follows:
+
+```
+jira-download/
+├── jira_download.py
+├── requirements.txt
+├── tests/
+│   ├── __init__.py
+│   ├── data/
+│   │   ├── issue_with_attachments.json
+│   │   ├── issue_no_description.json
+│   │   └── issue_no_attachments.json
+│   ├── test_cli.py
+│   └── test_jira_downloader.py
+└── ...
+```
+
+- **`tests/`**: The root directory for all test files.
+- **`tests/data/`**: This directory will store static JSON files representing mock Jira API responses. Using fixture files keeps the test code clean and separates test data from test logic.
+- **`tests/test_jira_downloader.py`**: Contains unit tests for the `JiraDownloader` class and its methods.
+- **`tests/test_cli.py`**: Contains end-to-end (E2E) tests for the command-line interface itself.
+
+## 4. Testing Strategy
+
+Our strategy combines unit tests and end-to-end (E2E) tests to ensure comprehensive coverage.
+
+### 4.1. Unit Tests
+
+Unit tests will focus on individual methods within the `JiraDownloader` class. All external interactions, especially `requests` API calls and file system operations (`open`, `write`), will be mocked. This ensures that tests are fast, deterministic, and independent of external services.
+
+### 4.2. End-to-End (E2E) Tests
+
+E2E tests will validate the application from the user's perspective by executing the `jira-download` script as a subprocess. These tests will verify command-line argument parsing, environment variable handling, and the final output (created directories and files). The Jira API will still be mocked at the `requests` level to maintain test isolation and reliability.
+
+## 5. Exhaustive Test Cases
+
+### 5.1. Unit Tests (`tests/test_jira_downloader.py`)
+
+#### `JiraDownloader.__init__`
+- **Test Case 5.1.1:** Verify that the `JiraDownloader` instance is initialized correctly with the proper `base_url`, `api_base`, and a `requests.Session` object containing the correct authentication credentials.
+
+#### `fetch_issue`
+- **Test Case 5.2.1:** On a successful API call, verify the method returns the correctly parsed JSON payload.
+- **Test Case 5.2.2:** When the API returns a 401 status, verify that an appropriate error is logged and `sys.exit(1)` is called.
+- **Test Case 5.2.3:** When the API returns a 404 status, verify that an appropriate error is logged and `sys.exit(1)` is called.
+- **Test Case 5.2.4:** When the API returns a generic HTTP error (e.g., 500), verify that the error is logged and `sys.exit(1)` is called.
+- **Test Case 5.2.5:** When a network error occurs (e.g., `requests.exceptions.RequestException`), verify the error is logged and `sys.exit(1)` is called.
+
+#### `download_attachments`
+- **Test Case 5.3.1:** Verify that a single attachment is downloaded correctly. Mock the file system to confirm the correct file path and content are written.
+- **Test Case 5.3.2:** Verify that multiple attachments are downloaded successfully.
+- **Test Case 5.3.3:** Verify that the method handles an empty list of attachments gracefully and does not create a directory.
+- **Test Case 5.3.4:** Verify that if a file with the same name already exists, a new, non-conflicting filename is generated (e.g., `file_1.png`).
+- **Test Case 5.3.5:** Verify that if an HTTP error occurs while downloading an attachment's content, the error is logged and the process continues to the next attachment.
+
+#### `convert_html_to_markdown`
+- **Test Case 5.4.1:** Verify that standard HTML (headings, lists, bold, italics, links) is converted to the correct Markdown syntax.
+- **Test Case 5.4.2:** Verify that an empty or `None` HTML string as input results in an empty string as output.
+- **Test Case 5.4.3:** Verify that residual or unhandled HTML tags are stripped from the output.
+- **Test Case 5.4.4:** Verify that excessive newlines in the input are cleaned up into a maximum of two consecutive newlines.
+
+#### `replace_attachment_links`
+- **Test Case 5.5.1:** Verify that a Jira image URL in a Markdown image tag (`![alt](jira-url)`) is replaced with a relative link to the local file (`![alt](filename.png)`).
+- **Test Case 5.5.2:** Verify that a Jira attachment URL in a Markdown link tag (`[text](jira-url)`) is replaced with a relative link (`[text](filename.pdf)`).
+- **Test Case 5.5.3:** Verify that multiple, different Jira URL patterns (e.g., `/secure/attachment/`, `/rest/api/3/attachment/content/`) are all correctly identified and replaced.
+- **Test Case 5.5.4:** Verify that filenames containing spaces or special characters are correctly URL-encoded in the final Markdown link.
+- **Test Case 5.5.5:** Verify that if no attachments were downloaded, the Markdown content remains unchanged.
+
+#### `compose_markdown`
+- **Test Case 5.6.1:** Verify the complete structure of the final Markdown file, ensuring the title, metadata, description, and attachments sections are all present and correctly formatted using a mock issue with all features.
+- **Test Case 5.6.2:** Verify the output for an issue that has no description. The "Description" section should indicate as such.
+- **Test Case 5.6.3:** Verify the output for an issue that has no attachments. The "Attachments" section should not be present.
+- **Test Case 5.6.4:** Verify that the "Attachments" section correctly embeds images (`![...](...)`) and links to other file types (`[...]...)`).
+
+#### `_format_size`
+- **Test Case 5.7.1:** Verify correct formatting for sizes in bytes (B), kilobytes (KB), megabytes (MB), and gigabytes (GB).
+
+### 5.2. E2E / CLI Tests (`tests/test_cli.py`)
+
+- **Test Case 5.8.1:** Run `jira-download <ISSUE_KEY>` with valid credentials and a mocked successful API response. Verify that the correct directory (`<ISSUE_KEY>/`) and files (`<ISSUE_KEY>.md`, attachments) are created in the filesystem.
+- **Test Case 5.8.2:** Verify that the content of the created `.md` file is exactly as expected.
+- **Test Case 5.8.3:** Run the command with the `--output <DIR>` flag. Verify that the output is created in the specified directory.
+- **Test Case 5.8.4:** Run the command without the required environment variables set. Verify that the script prints a clear error message to `stderr` and exits with a non-zero status code.
+- **Test Case 5.8.5:** Run the command with an invalid issue key (mocked 404 response). Verify that an appropriate error is printed to the console and the script exits gracefully.
+- **Test Case 5.8.6:** Run the command with invalid credentials (mocked 401 response). Verify the authentication error message is displayed.
+
+## 6. Execution and Reporting
+
+- **Running Tests:** The entire test suite can be run by executing the following command from the project root:
+  ```bash
+  pytest
+  ```
+- **Coverage Report:** To run the tests and generate a coverage report, use:
+  ```bash
+  pytest --cov=jira_download
+  ```
+  This will run the tests and print a summary of code coverage to the console. For a more detailed HTML report, use:
+  ```bash
+  pytest --cov=jira_download --cov-report=html
+  ```
+This will create an `htmlcov/` directory, which can be opened in a browser to explore coverage line-by-line.

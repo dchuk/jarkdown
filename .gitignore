@@ -57,3 +57,7 @@ htmlcov/
 claude-tmp/
 temp/
 tmp/
+
+# Documentation builds
+docs/_build/
+docs/build/
