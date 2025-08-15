@@ -39,22 +39,18 @@ The project is in an excellent state. The code is high-quality, the purpose is c
     -   **"Running the Tests"**: The command to run your test suite (`pytest --cov`).
     -   **"Pull Request Process"**: Your expectations for PRs (e.g., tests must pass, code should be clean, PRs should reference an issue).
 
-### 4. Add a `CODE_OF_CONDUCT.md` File
--   **Why:** This sets the standard for a welcoming and inclusive community, which is essential for attracting a diverse group of contributors.
--   **Recommendation:** You don't need to write one from scratch. Adopt a standard one like the **Contributor Covenant**. You can add it easily from GitHub's community standards tab in your repository settings.
-
 ---
 
 ## Tier 2: Hallmarks of a Successful Project (Highly Recommended)
 
-### 5. Publish to PyPI (Python Package Index)
+### 4. Publish to PyPI (Python Package Index)
 -   **Why:** This is the most significant step to make your tool easily accessible. It changes the installation from a multi-step cloning process to a simple `pip install jira-download`.
 -   **Recommendations:**
     1.  **Create a `pyproject.toml` file:** This is the modern standard for Python packaging. It will define your project's metadata, dependencies, and the CLI entry point. This will replace the need for the `jira-download` bash script.
     2.  **Define the CLI Entry Point:** In `pyproject.toml`, you can define a script entry point so that after installation, the `jira-download` command is automatically available in the user's path.
     3.  **Follow a tutorial** on publishing a package to PyPI.
 
-### 6. Implement Continuous Integration (CI)
+### 5. Implement Continuous Integration (CI)
 -   **Why:** CI automatically runs your tests on every commit and pull request. This guarantees that new changes don't break existing functionality and provides a critical quality gate for contributions.
 -   **Recommendation:**
     1.  **Use GitHub Actions.** It's free for public repositories and tightly integrated with GitHub.
@@ -65,14 +61,14 @@ The project is in an excellent state. The code is high-quality, the purpose is c
         -   Install dependencies.
         -   Run your test suite with `pytest --cov`.
 
-### 7. Adopt Versioning and a `CHANGELOG.md`
+### 6. Adopt Versioning and a `CHANGELOG.md`
 -   **Why:** Versioning communicates the significance of changes to your users. A changelog makes those changes transparent.
 -   **Recommendations:**
     1.  **Use Semantic Versioning (SemVer):** `MAJOR.MINOR.PATCH` (e.g., `1.0.0`). Start your initial release at `0.1.0` or `1.0.0`.
     2.  **Create a `CHANGELOG.md`:** Follow the "Keep a Changelog" format. For each version, list the `Added`, `Changed`, `Fixed`, and `Removed` features.
     3.  **Use Git Tags:** Tag each release in Git (e.g., `git tag -a v1.0.0 -m "Initial release"`). GitHub uses these tags to create official "Releases".
 
-### 8. Create GitHub Issue & PR Templates
+### 7. Create GitHub Issue & PR Templates
 -   **Why:** These guide users and contributors to provide the information you need, reducing back-and-forth communication.
 -   **Recommendation:**
     1.  Create a `.github/` directory.

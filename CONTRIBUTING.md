@@ -2,10 +2,6 @@
 
 First off, thank you for considering contributing to Jira Download! It's people like you that make this tool better for everyone.
 
-## Code of Conduct
-
-This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
-
 ## How Can I Contribute?
 
 ### Reporting Bugs
