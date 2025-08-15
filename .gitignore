@@ -27,9 +27,15 @@ BP-*/
 SA-*/
 *-[0-9]*/
 
-# Test files
-test_*.py
-find_*.py
+# Test files (but not in tests/ directory)
+/test_*.py
+/find_*.py
+
+# Test coverage
+.coverage
+htmlcov/
+*.cover
+.pytest_cache/
 
 # Temporary directories
 claude-tmp/

@@ -1,0 +1,46 @@
+{
+  "key": "TEST-123",
+  "fields": {
+    "summary": "Test Issue with Attachments",
+    "issuetype": {
+      "name": "Task"
+    },
+    "status": {
+      "name": "To Do"
+    },
+    "assignee": {
+      "displayName": "John Doe"
+    },
+    "reporter": {
+      "displayName": "Jane Smith"
+    },
+    "created": "2024-01-15T10:30:00.000+0000",
+    "updated": "2024-01-20T14:45:00.000+0000",
+    "priority": {
+      "name": "High"
+    },
+    "attachment": [
+      {
+        "filename": "screenshot.png",
+        "size": 256789,
+        "mimeType": "image/png",
+        "content": "https://example.atlassian.net/rest/api/3/attachment/content/10001"
+      },
+      {
+        "filename": "design_document.pdf",
+        "size": 1048576,
+        "mimeType": "application/pdf",
+        "content": "https://example.atlassian.net/rest/api/3/attachment/content/10002"
+      },
+      {
+        "filename": "diagram.jpg",
+        "size": 512000,
+        "mimeType": "image/jpeg",
+        "content": "https://example.atlassian.net/rest/api/3/attachment/content/10003"
+      }
+    ]
+  },
+  "renderedFields": {
+    "description": "<h2>Overview</h2><p>This is a <strong>test issue</strong> with <em>various</em> formatting.</p><ul><li>First item</li><li>Second item</li><li>Third item</li></ul><p>Here's an image: <img src=\"https://example.atlassian.net/secure/attachment/10001/screenshot.png\" /></p><p>And a link to the <a href=\"https://example.atlassian.net/rest/api/3/attachment/content/10002\">design document</a>.</p>"
+  }
+}

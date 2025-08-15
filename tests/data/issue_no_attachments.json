@@ -1,0 +1,25 @@
+{
+  "key": "TEST-789",
+  "fields": {
+    "summary": "Issue without Attachments",
+    "issuetype": {
+      "name": "Story"
+    },
+    "status": {
+      "name": "Done"
+    },
+    "assignee": null,
+    "reporter": {
+      "displayName": "Charlie Brown"
+    },
+    "created": "2024-03-10T08:15:00.000+0000",
+    "updated": "2024-03-15T16:20:00.000+0000",
+    "priority": {
+      "name": "Low"
+    },
+    "attachment": []
+  },
+  "renderedFields": {
+    "description": "<h1>Main Heading</h1><p>This issue has <strong>no attachments</strong> but has a detailed description.</p><ol><li>Ordered item 1</li><li>Ordered item 2</li></ol><p>Some <code>inline code</code> and a <a href=\"https://example.com\">external link</a>.</p>"
+  }
+}
