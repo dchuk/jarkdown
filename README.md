@@ -62,13 +62,13 @@ Basic usage:
 Examples:
 ```bash
 # Download an issue to the current directory
-./jira-download LFG-1234
+./jira-download PROJ-123
 
 # Download to a specific directory
-./jira-download LFG-1234 --output ~/Documents/jira-exports
+./jira-download PROJ-123 --output ~/Documents/jira-exports
 
 # Enable verbose logging
-./jira-download LFG-1234 --verbose
+./jira-download PROJ-123 --verbose
 ```
 
 ## Output Structure
@@ -79,8 +79,8 @@ The tool creates a directory named after the issue key containing:
 
 Example:
 ```
-LFG-1234/
-├── LFG-1234.md       # Issue content in markdown
+PROJ-123/
+├── PROJ-123.md       # Issue content in markdown
 ├── diagram.png       # Downloaded attachments
 ├── report.pdf
 └── ...

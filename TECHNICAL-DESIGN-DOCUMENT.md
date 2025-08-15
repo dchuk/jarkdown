@@ -5,7 +5,7 @@
 We propose a command-line tool **jira-download** that exports a Jira Cloud issue into a markdown file with all its attachments downloaded locally and referenced inline. The tool will use Jira’s REST API (Cloud) to retrieve the issue details (description, attachments, etc.) using an API token for authentication. It will then convert the issue’s content into GitHub-flavored Markdown and save any attached files in a local directory, adjusting the markdown so that attachment links point to the local files. This allows offline viewing or archiving of Jira tickets in a format suitable for GitHub or other Markdown readers.
 
 **Key Features:**
-- Fetch a specified Jira issue (e.g. LFG-1234) via the Jira Cloud REST API.
+- Fetch a specified Jira issue (e.g. PROJ-123) via the Jira Cloud REST API.
 - Download all attachments on the issue to a local folder.
 - Generate a Markdown file containing the issue’s content (description and optional metadata) with inline links/images pointing to the downloaded attachments (mirroring how they appeared in Jira).
 - Operate as a CLI command (jira-download <ISSUE-KEY>) for ease of use.
@@ -16,7 +16,7 @@ We propose a command-line tool **jira-download** that exports a Jira Cloud issue
 * **Authentication:** A Jira API token is available for authentication (along with the user’s email or using the token as a bearer token). We assume the user has the necessary permissions to read the issue and its attachments.
 * **Input:** A single Jira issue key (like PROJ-123) provided as an argument to the CLI. (Future enhancements may allow bulk exports or additional options.)
 * **Output:** A directory (named after the issue key for clarity) containing:
-* A Markdown file (e.g. LFG-1234.md) with the issue content and links to attachments.
+* A Markdown file (e.g. PROJ-123.md) with the issue content and links to attachments.
 * All attachment files downloaded from the issue, saved with their original filenames.
 * **Content to include:** The issue’s description (fully formatted in markdown). Basic issue metadata (like summary/title, status, type, etc.) can be included in the markdown for context (this is a “nice-to-have”). Comments or change logs are **out of scope** for the initial version (can be addressed in future versions).
 * **Formatting:** Use GitHub-Flavored Markdown (GFM) for the output so that headings, lists, code blocks, tables, etc., are preserved in a readable way. Attachments that are images should be embedded with markdown image syntax, while other file types will be linked by filename. Overall, the markdown should be clean and readable (optimized for GitHub viewing).
@@ -31,14 +31,14 @@ The solution will be implemented as a CLI program that performs the following hi
 2. **Issue Retrieval via API:** Call Jira’s REST API to fetch the issue data. We will use the GET /rest/api/3/issue/{ISSUE-KEY} endpoint with appropriate query parameters to retrieve the fields we need. In particular:
 3. Include the **description** and **attachment** fields in the response. For example:
 
-* GET https://<your-domain>.atlassian.net/rest/api/3/issue/LFG-1234?fields=summary,issuetype,status,description,attachment&expand=renderedFields
+* GET https://<your-domain>.atlassian.net/rest/api/3/issue/PROJ-123?fields=summary,issuetype,status,description,attachment&expand=renderedFields
 * This will retrieve the issue’s summary, type, status, description, attachments, etc. Adding expand=renderedFields instructs Jira to also return rendered HTML for the description (and other rich-text fields)[[2]](https://stackoverflow.com/questions/74547915/convert-jira-api-response-into-html#:~:text=I%20am%20calling%20this%20%2Frest%2Fapi%2F3%2Fissue%2F,the%20issue%20description%20in%20HTML). The raw JSON response will contain the description in Atlassian’s rich text format (known as ADF – Atlassian Document Format) under fields.description, and the rendered HTML under renderedFields.description if available. It will also contain an array of attachments under fields.attachment. Each attachment object includes details such as filename, size, and a **content URL** that can be used to download the file[[3]](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-post#:~:text=domain.atlassian.net%2Frest%2Fapi%2F3%2Fuser%3FaccountId%3D5b10a2844c20165700ede21g%22%20%7D%2C%20%22content%22%3A%20%22https%3A%2F%2Fyour,domain.atlassian.net%2Fjira%2Frest%2Fapi%2F3%2Fattachment%2Fthumbnail%2F10000%22).
 
 1. **Parse Issue Data:** Once the JSON is retrieved:
 2. Extract key metadata (e.g. issue key, summary/title, status, issue type, etc.). This can be used to add context at the top of the markdown (for instance, as a heading or a brief info section).
 3. Extract the **description content**. If renderedFields.description (HTML) is present, use that; otherwise use fields.description (which would be in ADF JSON).
 4. Extract the list of **attachments**. For each attachment, note its filename and the content URL (this URL is an API endpoint to fetch the binary content of the attachment)[[3]](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-post#:~:text=domain.atlassian.net%2Frest%2Fapi%2F3%2Fuser%3FaccountId%3D5b10a2844c20165700ede21g%22%20%7D%2C%20%22content%22%3A%20%22https%3A%2F%2Fyour,domain.atlassian.net%2Fjira%2Frest%2Fapi%2F3%2Fattachment%2Fthumbnail%2F10000%22). All attachments can be downloaded since we have the API token and appropriate permissions.
-5. **Download Attachments:** Create a local directory for the issue (for example, ./LFG-1234/) if not already existing. For each attachment from the previous step:
+5. **Download Attachments:** Create a local directory for the issue (for example, ./PROJ-123/) if not already existing. For each attachment from the previous step:
 6. Make an HTTP GET request to the attachment’s content URL. Use the same authentication (API token) for this request. (In Jira Cloud, this typically involves Basic Auth with email & token, or using an Authorization header. The API token in basic auth will allow direct download of the attachment content[[1]](https://support.atlassian.com/jira/kb/export-jira-project-attachments-using-rest-api/#:~:text=,curl)[[4]](https://support.atlassian.com/jira/kb/export-jira-project-attachments-using-rest-api/#:~:text=,command%20to%20download%20an%20attachment).)
 7. Save the response to a file in the issue’s directory. Use the original filename as provided by Jira (e.g. if the attachment is "diagram.png", save it as diagram.png). The --create-dirs option in the curl example illustrates creating a folder per issue and saving attachments inside[[4]](https://support.atlassian.com/jira/kb/export-jira-project-attachments-using-rest-api/#:~:text=,command%20to%20download%20an%20attachment). Our tool will do this programmatically (e.g. using file I/O in the chosen language).
 8. **Filename conflicts:** If two attachments coincidentally have the same name, the tool should handle this (for example, by appending a counter or the attachment ID to one of them to avoid overwrite). However, such cases are rare; we will log and adjust names if needed.
@@ -54,8 +54,8 @@ The solution will be implemented as a CLI program that performs the following hi
 15. **Compose the Markdown File:** Now we assemble the final markdown content. A suggested structure is:
 16. A title heading that includes the issue key and summary. For example:
 
-* # LFG-1234: Improve Login Feature
-* Optionally, we can make the issue key a hyperlink to the original Jira issue (for reference), e.g. [LFG-1234](https://<your-domain>.atlassian.net/browse/LFG-1234): Improve Login Feature. This provides quick navigation back to Jira (if online), but the rest of the content will be viewable offline.
+* # PROJ-123: Improve Login Feature
+* Optionally, we can make the issue key a hyperlink to the original Jira issue (for reference), e.g. [PROJ-123](https://<your-domain>.atlassian.net/browse/PROJ-123): Improve Login Feature. This provides quick navigation back to Jira (if online), but the rest of the content will be viewable offline.
 
 1. **Metadata section (optional):** A short section listing key fields like **Status**, **Issue Type**, **Priority**, **Assignee**, **Reporter**, etc. This can be formatted as a table or a list for clarity. For example:
 
@@ -76,12 +76,12 @@ The solution will be implemented as a CLI program that performs the following hi
 1. Ensure that the links use correct URL encoding for special characters (spaces, etc.), since in markdown a space in a link should be written as %20 or the whole link enclosed in <>. Our tool can handle this automatically or simply replace spaces with %20 in filenames for the link references. Alternatively, the program could rename files to a space-free version for convenience, but since the user likely expects original filenames, we will keep them and encode in links.
 2. **Output Files and Structure:** The program will write the markdown content to a file and confirm output to the user. The structure on disk will look like:
 
-* LFG-1234/
-   ├── LFG-1234.md
+* PROJ-123/
+   ├── PROJ-123.md
    ├── attachment1.png
    ├── attachment2.docx
    └── ...
-* The markdown file and attachments reside together in a folder named by the issue key. (Alternatively, we could put attachments in a subfolder like LFG-1234/attachments/ and adjust links accordingly, but for simplicity using one folder is fine.) The user can now open the markdown file in a viewer or on GitHub and see the issue content with local images displayed and file links available.
+* The markdown file and attachments reside together in a folder named by the issue key. (Alternatively, we could put attachments in a subfolder like PROJ-123/attachments/ and adjust links accordingly, but for simplicity using one folder is fine.) The user can now open the markdown file in a viewer or on GitHub and see the issue content with local images displayed and file links available.
 
 ## Implementation Details
 
@@ -97,7 +97,7 @@ This method is illustrated in Atlassian’s documentation[[1]](https://support.a
 
 **Fetching the Issue:** Construct the API URL for the issue as described. We include the fields we need: at least summary, description, issuetype, status, attachment. (We can include others like priority or custom fields if needed for metadata.) Example GET request:
 
-GET /rest/api/3/issue/LFG-1234?fields=summary,description,issuetype,status,priority,attachment&expand=renderedFields
+GET /rest/api/3/issue/PROJ-123?fields=summary,description,issuetype,status,priority,attachment&expand=renderedFields
 
 The response will be JSON. We will parse this JSON using a JSON library. Key parts:
 - fields.summary (string) – issue title.
@@ -134,7 +134,7 @@ After conversion, we have the description as a Markdown string. We then perform 
 
 **Example Markdown Output (illustrative):**
 
-# LFG-1234: Improve Login Feature
+# PROJ-123: Improve Login Feature
 
 \*\*Type:\*\* Story &nbsp;&nbsp; \*\*Status:\*\* In Progress &nbsp;&nbsp; \*\*Priority:\*\* High
 \*\*Assignee:\*\* Jane Doe &nbsp;&nbsp; \*\*Reporter:\*\* John Smith

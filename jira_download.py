@@ -303,8 +303,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 Examples:
-  jira-download LFG-1234
-  jira-download LFG-1234 --output ~/Documents/jira-exports
+  jira-download PROJ-123
+  jira-download PROJ-123 --output ~/Documents/jira-exports
   
 Environment variables:
   JIRA_DOMAIN     - Your Jira domain (e.g., your-company.atlassian.net)
@@ -313,7 +313,7 @@ Environment variables:
         '''
     )
     
-    parser.add_argument('issue_key', help='Jira issue key (e.g., LFG-1234)')
+    parser.add_argument('issue_key', help='Jira issue key (e.g., PROJ-123)')
     parser.add_argument('--output', '-o', help='Output directory (default: current directory)')
     parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose logging')
     
