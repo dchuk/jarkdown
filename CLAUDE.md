@@ -117,3 +117,4 @@ ISSUE-KEY/
 - `tests/data/` - JSON fixtures for mocked API responses
 
 All dependencies managed in `pyproject.toml` (no requirements.txt).
+- Never delete any file in the @docs/design/ directory.
