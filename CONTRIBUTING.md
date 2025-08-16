@@ -50,11 +50,15 @@ Unsure where to begin contributing? You can start by looking through these `begi
 
 4. **Install dependencies**:
    ```bash
-   pip install -r requirements.txt
-   pip install pytest pytest-mock pytest-cov  # Test dependencies
+   pip install -e ".[dev]"  # Install package in editable mode with dev dependencies
    ```
 
-5. **Create a branch** for your feature or fix:
+5. **Install pre-commit hooks**:
+   ```bash
+   pre-commit install
+   ```
+
+6. **Create a branch** for your feature or fix:
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -90,7 +94,7 @@ Our CI pipeline requires:
 
 3. **Add tests** for any new functionality
 
-4. **Update documentation** as needed
+4. **Update documentation** as needed (see Documentation section below)
 
 5. **Ensure all tests pass** locally
 
@@ -107,6 +111,44 @@ Our CI pipeline requires:
    - Request review from maintainers
 
 8. **Address review feedback** promptly
+
+## Documentation
+
+The project documentation is built with Sphinx and hosted on [ReadTheDocs](https://jarkdown.readthedocs.io/).
+
+### Building Documentation Locally
+
+1. **Install documentation dependencies**:
+   ```bash
+   pip install -r docs/requirements.txt
+   ```
+
+2. **Build the documentation**:
+   ```bash
+   cd docs
+   make clean
+   make html
+   ```
+
+3. **View the documentation**:
+   Open `docs/build/html/index.html` in your browser.
+
+### Documentation Guidelines
+
+- Update docstrings for any new or modified functions/classes
+- Use Google-style docstrings for consistency
+- Update relevant `.md` or `.rst` files in `docs/source/`
+- Add examples for new features
+- Ensure all links work correctly
+- Update the API reference if you add new public APIs
+
+### Documentation Structure
+
+- `docs/source/` - Source files for documentation
+- `docs/source/conf.py` - Sphinx configuration
+- `docs/source/index.rst` - Main documentation index
+- `docs/source/api_reference.rst` - Auto-generated API docs
+- `docs/requirements.txt` - Documentation dependencies
 
 ## Style Guide
 
