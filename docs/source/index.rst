@@ -44,6 +44,7 @@ Contents
    :maxdepth: 2
    :caption: User Guide
 
+   beginners_guide
    installation
    usage
    configuration

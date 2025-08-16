@@ -69,6 +69,10 @@ class TestCLI:
                 original_cwd = os.getcwd()
                 os.chdir(tmp_path)
 
+                # Create a dummy .env file for the test
+                with open(".env", "w") as f:
+                    f.write("")
+
                 try:
                     # Mock sys.argv for in-process execution
                     with patch("sys.argv", ["jarkdown", "TEST-123"]):
@@ -107,6 +111,10 @@ class TestCLI:
                 original_cwd = os.getcwd()
                 os.chdir(tmp_path)
 
+                # Create a dummy .env file for the test
+                with open(".env", "w") as f:
+                    f.write("")
+
                 try:
                     with patch("sys.argv", ["jarkdown", "TEST-123"]):
                         # Call main directly - successful execution doesn't raise SystemExit
@@ -142,18 +150,29 @@ class TestCLI:
 
         with patch("requests.Session", return_value=mock_session):
             with patch.dict(os.environ, mock_env):
-                custom_output = tmp_path / "custom_output"
+                # Change to temp directory and create .env file
+                original_cwd = os.getcwd()
+                os.chdir(tmp_path)
 
-                with patch(
-                    "sys.argv",
-                    ["jarkdown", "TEST-789", "--output", str(custom_output)],
-                ):
-                    # Call main directly - successful execution doesn't raise SystemExit
-                    main()
+                # Create a dummy .env file for the test
+                with open(".env", "w") as f:
+                    f.write("")
 
-                # Check that files were created in custom directory
-                assert os.path.exists(custom_output / "TEST-789")
-                assert os.path.exists(custom_output / "TEST-789" / "TEST-789.md")
+                try:
+                    custom_output = tmp_path / "custom_output"
+
+                    with patch(
+                        "sys.argv",
+                        ["jarkdown", "TEST-789", "--output", str(custom_output)],
+                    ):
+                        # Call main directly - successful execution doesn't raise SystemExit
+                        main()
+
+                    # Check that files were created in custom directory
+                    assert os.path.exists(custom_output / "TEST-789")
+                    assert os.path.exists(custom_output / "TEST-789" / "TEST-789.md")
+                finally:
+                    os.chdir(original_cwd)
 
     def test_missing_environment_variables(self, tmp_path):
         """Verify error when environment variables are missing"""
@@ -164,18 +183,29 @@ class TestCLI:
             with patch(
                 "jarkdown.jarkdown.load_dotenv"
             ):  # Mock load_dotenv to prevent loading any .env files
-                with patch("sys.argv", ["jarkdown", "TEST-123"]):
-                    # Capture stderr
-                    with patch("sys.stderr", new=StringIO()) as mock_stderr:
-                        with pytest.raises(SystemExit) as exc_info:
-                            main()
+                # Change to temp directory and create an empty .env file
+                original_cwd = os.getcwd()
+                os.chdir(tmp_path)
 
-                        assert exc_info.value.code != 0
-                        stderr_output = mock_stderr.getvalue()
-                        assert (
-                            "Configuration error" in stderr_output
-                            or "Missing" in stderr_output
-                        )
+                # Create a dummy .env file for the test (empty, so vars will be missing)
+                with open(".env", "w") as f:
+                    f.write("")
+
+                try:
+                    with patch("sys.argv", ["jarkdown", "TEST-123"]):
+                        # Capture stdout (errors now go to stdout)
+                        with patch("sys.stdout", new=StringIO()) as mock_stdout:
+                            with pytest.raises(SystemExit) as exc_info:
+                                main()
+
+                            assert exc_info.value.code != 0
+                            stdout_output = mock_stdout.getvalue()
+                            assert (
+                                "Missing required environment variables"
+                                in stdout_output
+                            )
+                finally:
+                    os.chdir(original_cwd)
 
     def test_invalid_issue_key_404(self, mock_env, mocker, tmp_path):
         """Verify 404 error handling"""
@@ -189,17 +219,28 @@ class TestCLI:
 
         with patch("requests.Session", return_value=mock_session):
             with patch.dict(os.environ, mock_env):
-                with patch("sys.argv", ["jarkdown", "INVALID-999"]):
-                    with patch("sys.stderr", new=StringIO()) as mock_stderr:
-                        with pytest.raises(SystemExit) as exc_info:
-                            main()
+                # Change to temp directory and create .env file
+                original_cwd = os.getcwd()
+                os.chdir(tmp_path)
 
-                        assert exc_info.value.code != 0
-                        stderr_output = mock_stderr.getvalue()
-                        assert (
-                            "not found" in stderr_output.lower()
-                            or "404" in stderr_output
-                        )
+                # Create a dummy .env file for the test
+                with open(".env", "w") as f:
+                    f.write("")
+
+                try:
+                    with patch("sys.argv", ["jarkdown", "INVALID-999"]):
+                        with patch("sys.stderr", new=StringIO()) as mock_stderr:
+                            with pytest.raises(SystemExit) as exc_info:
+                                main()
+
+                            assert exc_info.value.code != 0
+                            stderr_output = mock_stderr.getvalue()
+                            assert (
+                                "not found" in stderr_output.lower()
+                                or "404" in stderr_output
+                            )
+                finally:
+                    os.chdir(original_cwd)
 
     def test_invalid_credentials_401(self, mocker, tmp_path):
         """Verify 401 authentication error"""
@@ -269,11 +310,19 @@ class TestCLI:
 
         with patch("requests.Session", return_value=mock_session):
             with patch.dict(os.environ, mock_env):
-                with patch(
-                    "sys.argv", ["jarkdown", "TEST-456", "--output", str(tmp_path)]
-                ):
-                    main()
+                # Change to temp directory and create .env file
+                original_cwd = os.getcwd()
+                os.chdir(tmp_path)
 
+                # Create a dummy .env file for the test
+                with open(".env", "w") as f:
+                    f.write("")
+
+                try:
+                    with patch(
+                        "sys.argv", ["jarkdown", "TEST-456", "--output", str(tmp_path)]
+                    ):
+                        main()
                     # Check markdown file was created with comments
                     output_dir = tmp_path / "TEST-456"
                     md_file = output_dir / "TEST-456.md"
@@ -298,3 +347,5 @@ class TestCLI:
                         "[TEST-456](https://example.atlassian.net/browse/TEST-456)", ""
                     )
                     assert "/attachment/content/" not in content
+                finally:
+                    os.chdir(original_cwd)

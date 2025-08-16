@@ -12,6 +12,7 @@ A command-line tool that exports Jira Cloud issues into markdown files with all 
 
 Full documentation is available at [jarkdown.readthedocs.io](https://jarkdown.readthedocs.io/), including:
 
+- [Getting Started for Beginners](https://jarkdown.readthedocs.io/en/latest/beginners_guide.html) - Step-by-step guide for new users
 - [Installation Guide](https://jarkdown.readthedocs.io/en/latest/installation.html)
 - [Usage Guide](https://jarkdown.readthedocs.io/en/latest/usage.html)
 - [Configuration](https://jarkdown.readthedocs.io/en/latest/configuration.html)
@@ -29,12 +30,39 @@ Full documentation is available at [jarkdown.readthedocs.io](https://jarkdown.re
 
 ## Installation
 
-### Quick Install (Coming Soon)
+### Quick Install (Recommended)
+
+Install directly from PyPI with a single command:
 ```bash
 pip install jarkdown
 ```
 
-### Install from Source
+### Configuration
+
+After installation, you need to set up your Jira credentials. Create a file named `.env` in the directory where you'll run the `jarkdown` command:
+
+1. Create the `.env` file with the following content:
+```
+JIRA_DOMAIN=your-company.atlassian.net
+JIRA_EMAIL=your-email@example.com
+JIRA_API_TOKEN=your-api-token-here
+```
+
+2. Replace the values with your actual Jira information:
+   - `JIRA_DOMAIN`: Your Atlassian domain (e.g., company.atlassian.net)
+   - `JIRA_EMAIL`: The email address you use to log into Jira
+   - `JIRA_API_TOKEN`: Your personal API token (see below)
+
+### Getting Your Jira API Token
+
+1. Go to https://id.atlassian.com/manage-profile/security/api-tokens
+2. Click "Create API token"
+3. Give it a name (e.g., "jarkdown")
+4. Copy the token and paste it into your `.env` file
+
+### For Developers (Installing from Source)
+
+If you want to contribute to the project or need the latest development version:
 
 1. Clone the repository:
 ```bash
@@ -42,25 +70,23 @@ git clone https://github.com/chrisbyboston/jarkdown.git
 cd jarkdown
 ```
 
-2. Install dependencies:
+2. Create a virtual environment and install dependencies:
+
+**On macOS/Linux:**
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-3. Set up environment variables:
-
-Copy the example configuration and fill in your Jira credentials:
+**On Windows:**
 ```bash
-cp .env.example .env
-# Edit .env with your actual values
+python -m venv venv
+venv\Scripts\activate
+pip install -e ".[dev]"
 ```
 
-To get a Jira API token:
-1. Go to https://id.atlassian.com/manage-profile/security/api-tokens
-2. Click "Create API token"
-3. Give it a name and copy the token
+3. Set up your `.env` file as described above
 
 ## Usage
 
