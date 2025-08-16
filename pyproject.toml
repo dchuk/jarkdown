@@ -45,7 +45,7 @@ Repository = "https://github.com/chrisbyboston/jira-download.git"
 Issues = "https://github.com/chrisbyboston/jira-download/issues"
 
 [project.scripts]
-jira-download = "jira_download_pkg:main"
+jira-download = "jira_download:main"
 
 [project.optional-dependencies]
 dev = [
@@ -54,9 +54,11 @@ dev = [
     "pytest-cov>=4.0.0",
 ]
 
+[tool.setuptools]
+py-modules = ["jira_download", "jira_api_client", "attachment_handler", "markdown_converter", "exceptions"]
+
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["jira_download_pkg*"]
+include = ["jira_download*"]
 exclude = ["tests*"]
 
 [tool.pytest.ini_options]
@@ -67,7 +69,7 @@ python_functions = ["test_*"]
 addopts = "-v --tb=short"
 
 [tool.coverage.run]
-source = ["jira_download_pkg"]
+source = ["jira_download"]
 omit = ["tests/*", "venv/*"]
 
 [tool.coverage.report]

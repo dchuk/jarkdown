@@ -3,7 +3,7 @@
 import logging
 import requests
 
-from .exceptions import JiraApiError, AuthenticationError, IssueNotFoundError
+from exceptions import JiraApiError, AuthenticationError, IssueNotFoundError
 
 
 class JiraApiClient:
