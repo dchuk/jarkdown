@@ -5,7 +5,7 @@ from io import StringIO
 import pytest
 import requests
 
-from jira_download_pkg.jira_download import main
+from jira_download.jira_download import main
 
 
 @pytest.fixture
@@ -162,7 +162,7 @@ class TestCLI:
 
         with patch.dict(os.environ, clean_env, clear=True):
             with patch(
-                "jira_download_pkg.jira_download.load_dotenv"
+                "jira_download.jira_download.load_dotenv"
             ):  # Mock load_dotenv to prevent loading any .env files
                 with patch("sys.argv", ["jira-download", "TEST-123"]):
                     # Capture stderr

@@ -11,6 +11,7 @@ import sys
 import argparse
 import logging
 from pathlib import Path
+from importlib.metadata import version, PackageNotFoundError
 
 from dotenv import load_dotenv
 
@@ -20,10 +21,15 @@ from .markdown_converter import MarkdownConverter
 from .exceptions import (
     JiraDownloadError,
     ConfigurationError,
-    AuthenticationError,
-    IssueNotFoundError,
-    AttachmentDownloadError,
 )
+
+
+def get_version():
+    """Get the version of jira-download."""
+    try:
+        return version("jira-download")
+    except PackageNotFoundError:
+        return "unknown"
 
 
 def export_issue(api_client, issue_key, output_dir=None):
@@ -88,7 +94,7 @@ def main():
 Examples:
   jira-download PROJ-123
   jira-download PROJ-123 --output ~/Documents/jira-exports
-  
+
 Environment variables:
   JIRA_DOMAIN     - Your Jira domain (e.g., your-company.atlassian.net)
   JIRA_EMAIL      - Your Jira account email
@@ -102,6 +108,12 @@ Environment variables:
     )
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="Enable verbose logging"
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=get_version(),
+        help="Show program version and exit",
     )
 
     args = parser.parse_args()
@@ -131,19 +143,8 @@ Environment variables:
         api_client = JiraApiClient(domain, email, api_token)
         export_issue(api_client, args.issue_key, args.output)
 
-    except ConfigurationError as e:
-        print(f"Configuration error: {e}", file=sys.stderr)
-        sys.exit(1)
-    except AuthenticationError as e:
-        print(f"Authentication error: {e}", file=sys.stderr)
-        sys.exit(1)
-    except IssueNotFoundError as e:
-        print(f"Issue not found: {e}", file=sys.stderr)
-        sys.exit(1)
-    except AttachmentDownloadError as e:
-        print(f"Attachment download error: {e}", file=sys.stderr)
-        sys.exit(1)
     except JiraDownloadError as e:
+        # Catch all JiraDownloadError subclasses with a single handler
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
     except KeyboardInterrupt:

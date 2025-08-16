@@ -66,19 +66,22 @@ To get a Jira API token:
 
 Basic usage:
 ```bash
-./jira-download ISSUE-KEY
+jira-download ISSUE-KEY
 ```
 
 Examples:
 ```bash
 # Download an issue to the current directory
-./jira-download PROJ-123
+jira-download PROJ-123
 
 # Download to a specific directory
-./jira-download PROJ-123 --output ~/Documents/jira-exports
+jira-download PROJ-123 --output ~/Documents/jira-exports
 
 # Enable verbose logging
-./jira-download PROJ-123 --verbose
+jira-download PROJ-123 --verbose
+
+# Show version
+jira-download --version
 ```
 
 ## Output Structure
@@ -134,7 +137,79 @@ Images are embedded inline, other files are linked.
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! Here's how to get started:
+
+### Development Setup
+
+1. **Fork and clone** the repository:
+```bash
+git clone https://github.com/YOUR-USERNAME/jira-download.git
+cd jira-download
+```
+
+2. **Create a virtual environment** and install dependencies:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -e ".[dev]"
+```
+
+3. **Install pre-commit hooks**:
+```bash
+pre-commit install
+```
+
+### Making Changes
+
+1. **Create a feature branch**:
+```bash
+git checkout -b feature/your-feature-name
+```
+
+2. **Make your changes** and ensure tests pass:
+```bash
+pytest
+pytest --cov=src/jira_download --cov-report=term-missing
+```
+
+3. **Commit your changes** (pre-commit hooks will run automatically):
+```bash
+git add .
+git commit -m "feat: describe your change"
+```
+
+4. **Push and create a pull request**:
+```bash
+git push origin feature/your-feature-name
+```
+
+Then open a pull request on GitHub.
+
+### Code Style
+
+- We use `ruff` for linting and formatting
+- Pre-commit hooks ensure code quality
+- Write clear, descriptive commit messages
+- Add tests for new functionality
+- Update documentation as needed
+
+### Testing
+
+Run the test suite:
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src/jira_download --cov-report=term-missing
+
+# Run specific test file
+pytest tests/test_cli.py
+```
+
+### Reporting Issues
+
+Please use the [GitHub issue tracker](https://github.com/chrisbyboston/jira-download/issues) to report bugs or request features.
 
 ## License
 

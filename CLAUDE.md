@@ -11,13 +11,14 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -e ".[dev]"
 
-# Run the tool
-./jira-download ISSUE-KEY
-./jira-download ISSUE-KEY --output /path/to/output
-./jira-download ISSUE-KEY --verbose
+# Run the tool (after pip install -e .)
+jira-download ISSUE-KEY
+jira-download ISSUE-KEY --output /path/to/output
+jira-download ISSUE-KEY --verbose
+jira-download --version
 
 # Direct Python execution (if in venv)
-python jira_download.py ISSUE-KEY
+python -m jira_download.jira_download ISSUE-KEY
 ```
 
 ### Testing
@@ -26,7 +27,7 @@ python jira_download.py ISSUE-KEY
 pytest
 
 # Run tests with coverage
-pytest --cov=jira_download --cov-report=term-missing
+pytest --cov=src/jira_download --cov-report=term-missing
 
 # Run specific test file
 pytest tests/test_cli.py
@@ -54,30 +55,30 @@ The codebase follows a modular architecture with clear separation of concerns:
 
 ### Core Components
 
-1. **`jira_download.py`** - Main entry point and CLI orchestrator
+1. **`src/jira_download/jira_download.py`** - Main entry point and CLI orchestrator
    - Contains `main()` function that handles CLI argument parsing
    - Contains `export_issue()` function that coordinates the workflow
    - All error handling and `sys.exit()` calls happen here, not in component classes
 
-2. **`jira_api_client.py`** - JiraApiClient class
+2. **`src/jira_download/jira_api_client.py`** - JiraApiClient class
    - Manages all Jira REST API communication
    - Handles authentication and session management
    - Returns raw JSON data, no data transformation
    - Raises specific exceptions (AuthenticationError, IssueNotFoundError, JiraApiError)
 
-3. **`attachment_handler.py`** - AttachmentHandler class
+3. **`src/jira_download/attachment_handler.py`** - AttachmentHandler class
    - Downloads and saves attachments
    - Handles filename conflict resolution
    - Stream-based downloading for memory efficiency
    - Returns metadata about downloaded files
 
-4. **`markdown_converter.py`** - MarkdownConverter class
+4. **`src/jira_download/markdown_converter.py`** - MarkdownConverter class
    - Converts HTML to Markdown using markdownify
    - Replaces Jira attachment URLs with local file references
    - Composes final markdown structure with metadata
    - Handles various Jira URL patterns for attachments
 
-5. **`exceptions.py`** - Custom exception hierarchy
+5. **`src/jira_download/exceptions.py`** - Custom exception hierarchy
    - `JiraDownloadError` - Base exception
    - `JiraApiError` - API communication errors
    - `AuthenticationError` - 401 errors
