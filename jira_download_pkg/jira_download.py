@@ -14,10 +14,10 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from jira_api_client import JiraApiClient
-from attachment_handler import AttachmentHandler
-from markdown_converter import MarkdownConverter
-from exceptions import (
+from .jira_api_client import JiraApiClient
+from .attachment_handler import AttachmentHandler
+from .markdown_converter import MarkdownConverter
+from .exceptions import (
     JiraDownloadError,
     ConfigurationError,
     AuthenticationError,

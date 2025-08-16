@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This project is a command-line tool named "Jira Download" that exports Jira Cloud issues to Markdown files. The tool fetches issue data from the Jira Cloud REST API, downloads all attachments, and converts the issue description from HTML to GitHub-flavored Markdown. The goal is to create a local, offline copy of a Jira issue with all its content and attachments preserved.
+This project is a command-line tool named "Jira Download" that exports Jira Cloud issues to Markdown files. The tool fetches issue data from the Jira Cloud REST API, downloads all attachments, converts the issue description and comments from HTML to GitHub-flavored Markdown. The goal is to create a local, offline copy of a Jira issue with all its content and attachments preserved.
 
 The project is written in Python and uses the following main technologies:
 
@@ -11,7 +11,7 @@ The project is written in Python and uses the following main technologies:
 *   **`python-dotenv`**: For managing environment variables for Jira credentials.
 *   **`pytest`**: For testing the application.
 
-The application's logic is encapsulated in the `export_issue` function, which coordinates between three main components: `JiraApiClient` for API communication, `AttachmentHandler` for downloading attachments, and `MarkdownConverter` for converting HTML to Markdown. The command-line interface is handled in the `main` function, which uses `argparse` to parse command-line arguments.
+The application's logic is encapsulated in the `export_issue` function, which coordinates between three main components: `JiraApiClient` for API communication, `AttachmentHandler` for downloading attachments, and `MarkdownConverter` for converting HTML to Markdown and handling comments. The command-line interface is handled in the `main` function, which uses `argparse` to parse command-line arguments.
 
 ## Building and Running
 
