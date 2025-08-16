@@ -42,6 +42,13 @@ def issue_no_attachments():
         return json.load(f)
 
 
+@pytest.fixture
+def issue_with_comments():
+    """Load mock issue data with comments"""
+    with open('tests/data/issue_with_comments.json') as f:
+        return json.load(f)
+
+
 class TestCLI:
     """End-to-end tests for the CLI interface"""
     
@@ -220,3 +227,43 @@ class TestCLI:
                     # Since verbose affects logging level, we can't easily test the output
                     # Just verify the command succeeds without raising SystemExit
                     main()
+    
+    def test_successful_download_with_comments(self, mock_env, issue_with_comments, tmp_path, mocker):
+        """Test successful download with comments section"""
+        mock_session = Mock()
+        mock_get = Mock()
+        mock_response = Mock()
+        mock_response.raise_for_status = Mock()
+        mock_response.json.return_value = issue_with_comments
+        mock_get.return_value = mock_response
+        mock_session.get = mock_get
+        
+        # Mock attachment downloads
+        attachment_response = Mock()
+        attachment_response.iter_content = Mock(return_value=[b'test content'])
+        mock_session.get = Mock(side_effect=[mock_response, attachment_response, attachment_response])
+        
+        with patch('requests.Session', return_value=mock_session):
+            with patch.dict(os.environ, mock_env):
+                with patch('sys.argv', ['jira-download', 'TEST-456', '--output', str(tmp_path)]):
+                    main()
+                    
+                    # Check markdown file was created with comments
+                    output_dir = tmp_path / 'TEST-456'
+                    md_file = output_dir / 'TEST-456.md'
+                    
+                    assert md_file.exists()
+                    content = md_file.read_text()
+                    
+                    # Verify comments section exists
+                    assert '## Comments' in content
+                    assert '**John Doe** - _2025-08-16 10:30 AM_' in content
+                    assert '> This is the first comment' in content
+                    assert '**Jane Smith** - _2025-08-16 11:15 AM_' in content
+                    assert '**Alice Developer** - _2025-08-16 02:45 PM_' in content
+                    
+                    # Verify attachment links in comments are replaced
+                    assert '> ![new_mockup.png](new_mockup.png)' in content
+                    # Check that no secure attachment URLs remain (but the issue link is OK)
+                    assert '/secure/attachment/' not in content
+                    assert '/attachment/content/' not in content

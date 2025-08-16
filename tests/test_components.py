@@ -57,6 +57,13 @@ def issue_no_attachments():
         return json.load(f)
 
 
+@pytest.fixture
+def issue_with_comments():
+    """Load mock issue data with comments"""
+    with open('tests/data/issue_with_comments.json') as f:
+        return json.load(f)
+
+
 class TestJiraApiClient:
     """Tests for JiraApiClient class"""
     
@@ -87,7 +94,7 @@ class TestJiraApiClient:
         api_client.session.get.assert_called_once_with(
             'https://example.atlassian.net/rest/api/3/issue/TEST-123',
             params={
-                'fields': 'summary,description,issuetype,status,priority,attachment,assignee,reporter,created,updated',
+                'fields': 'summary,description,issuetype,status,priority,attachment,assignee,reporter,created,updated,comment',
                 'expand': 'renderedFields'
             }
         )
@@ -427,3 +434,88 @@ class TestMarkdownConverter:
         assert '- ![image.jpg](image.jpg)' in result
         assert '- [document.pdf](document.pdf)' in result
         assert '- [data.csv](data.csv)' in result
+    
+    def test_comments_section_formatting(self, markdown_converter, issue_with_comments):
+        """Test comments section formatting with attachments"""
+        attachments = [
+            {'filename': 'error_log.txt', 'mime_type': 'text/plain', 'original_filename': 'error_log.txt'},
+            {'filename': 'new_mockup.png', 'mime_type': 'image/png', 'original_filename': 'new_mockup.png'}
+        ]
+        
+        result = markdown_converter.compose_markdown(issue_with_comments, attachments)
+        
+        # Check comments section exists
+        assert '## Comments' in result
+        
+        # Check first comment
+        assert '**John Doe** - _2025-08-16 10:30 AM_' in result
+        assert '> This is the first comment. It looks like we need to update the design mockups.' in result
+        assert '> ![new_mockup.png](new_mockup.png)' in result  # Attachment link replaced
+        
+        # Check second comment
+        assert '**Jane Smith** - _2025-08-16 11:15 AM_' in result
+        assert '> Thanks, John! This looks **much better**. I have approved the changes.' in result
+        
+        # Check third comment with list
+        assert '**Alice Developer** - _2025-08-16 02:45 PM_' in result
+        assert "I've reviewed the error logs attached to this issue" in result
+        assert '> * Memory leak in the connection pool' in result or '> - Memory leak in the connection pool' in result
+        assert '> * Incorrect timeout settings' in result or '> - Incorrect timeout settings' in result
+        
+        # Ensure attachment URLs are replaced (but not the issue link at the top)
+        # Check that no secure attachment URLs remain
+        assert '/secure/attachment/' not in result
+        assert '/attachment/content/' not in result
+    
+    def test_issue_with_no_comments(self, markdown_converter):
+        """Test issue with no comments doesn't include comments section"""
+        issue_data = {
+            'key': 'TEST-789',
+            'fields': {
+                'summary': 'Issue without comments',
+                'issuetype': {'name': 'Task'},
+                'status': {'name': 'Open'},
+                'comment': {
+                    'comments': [],
+                    'total': 0
+                }
+            },
+            'renderedFields': {
+                'description': '<p>Test description</p>'
+            }
+        }
+        
+        result = markdown_converter.compose_markdown(issue_data, [])
+        
+        # Comments section should not be present
+        assert '## Comments' not in result
+        assert 'TEST-789' in result
+        assert 'Test description' in result
+    
+    def test_comments_with_empty_body(self, markdown_converter):
+        """Test handling of comments with empty body"""
+        issue_data = {
+            'key': 'TEST-999',
+            'fields': {
+                'summary': 'Test',
+                'issuetype': {'name': 'Task'},
+                'status': {'name': 'Open'},
+                'comment': {
+                    'comments': [
+                        {
+                            'author': {'displayName': 'Test User'},
+                            'created': '2025-08-16T10:00:00.000+0000',
+                            'body': '',
+                            'renderedBody': ''
+                        }
+                    ]
+                }
+            },
+            'renderedFields': {}
+        }
+        
+        result = markdown_converter.compose_markdown(issue_data, [])
+        
+        assert '## Comments' in result
+        assert '**Test User**' in result
+        assert '> *No comment body*' in result

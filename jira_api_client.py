@@ -46,7 +46,7 @@ class JiraApiClient:
             IssueNotFoundError: If issue is not found
             JiraApiError: For other API errors
         """
-        fields = "summary,description,issuetype,status,priority,attachment,assignee,reporter,created,updated"
+        fields = "summary,description,issuetype,status,priority,attachment,assignee,reporter,created,updated,comment"
         url = f"{self.api_base}/issue/{issue_key}"
         params = {
             'fields': fields,
