@@ -1,11 +1,22 @@
 # Jira Download - Export Jira Issues to Markdown
 
+[![Documentation Status](https://readthedocs.org/projects/jira-download/badge/?version=latest)](https://jira-download.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/chrisbyboston/jira-download/actions)
 [![Coverage](https://img.shields.io/badge/coverage-87%25-green)](https://github.com/chrisbyboston/jira-download/actions)
 
 A command-line tool that exports Jira Cloud issues into markdown files with all attachments downloaded locally and referenced inline.
+
+## Documentation
+
+Full documentation is available at [jira-download.readthedocs.io](https://jira-download.readthedocs.io/), including:
+
+- [Installation Guide](https://jira-download.readthedocs.io/en/latest/installation.html)
+- [Usage Guide](https://jira-download.readthedocs.io/en/latest/usage.html)
+- [Configuration](https://jira-download.readthedocs.io/en/latest/configuration.html)
+- [API Reference](https://jira-download.readthedocs.io/en/latest/api_reference.html)
+- [Contributing](https://jira-download.readthedocs.io/en/latest/contributing.html)
 
 ## Features
 
