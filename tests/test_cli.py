@@ -71,7 +71,7 @@ class TestCLI:
 
                 try:
                     # Mock sys.argv for in-process execution
-                    with patch("sys.argv", ["jira-download", "TEST-123"]):
+                    with patch("sys.argv", ["jarkdown", "TEST-123"]):
                         # Call main directly - successful execution doesn't raise SystemExit
                         main()
 
@@ -108,7 +108,7 @@ class TestCLI:
                 os.chdir(tmp_path)
 
                 try:
-                    with patch("sys.argv", ["jira-download", "TEST-123"]):
+                    with patch("sys.argv", ["jarkdown", "TEST-123"]):
                         # Call main directly - successful execution doesn't raise SystemExit
                         main()
 
@@ -146,7 +146,7 @@ class TestCLI:
 
                 with patch(
                     "sys.argv",
-                    ["jira-download", "TEST-789", "--output", str(custom_output)],
+                    ["jarkdown", "TEST-789", "--output", str(custom_output)],
                 ):
                     # Call main directly - successful execution doesn't raise SystemExit
                     main()
@@ -189,7 +189,7 @@ class TestCLI:
 
         with patch("requests.Session", return_value=mock_session):
             with patch.dict(os.environ, mock_env):
-                with patch("sys.argv", ["jira-download", "INVALID-999"]):
+                with patch("sys.argv", ["jarkdown", "INVALID-999"]):
                     with patch("sys.stderr", new=StringIO()) as mock_stderr:
                         with pytest.raises(SystemExit) as exc_info:
                             main()
@@ -219,7 +219,7 @@ class TestCLI:
 
         with patch("requests.Session", return_value=mock_session):
             with patch.dict(os.environ, bad_env):
-                with patch("sys.argv", ["jira-download", "TEST-123"]):
+                with patch("sys.argv", ["jarkdown", "TEST-123"]):
                     with patch("sys.stderr", new=StringIO()) as mock_stderr:
                         with pytest.raises(SystemExit) as exc_info:
                             main()
@@ -243,7 +243,7 @@ class TestCLI:
 
         with patch("requests.Session", return_value=mock_session):
             with patch.dict(os.environ, mock_env):
-                with patch("sys.argv", ["jira-download", "TEST-456", "--verbose"]):
+                with patch("sys.argv", ["jarkdown", "TEST-456", "--verbose"]):
                     # Since verbose affects logging level, we can't easily test the output
                     # Just verify the command succeeds without raising SystemExit
                     main()
@@ -270,7 +270,7 @@ class TestCLI:
         with patch("requests.Session", return_value=mock_session):
             with patch.dict(os.environ, mock_env):
                 with patch(
-                    "sys.argv", ["jira-download", "TEST-456", "--output", str(tmp_path)]
+                    "sys.argv", ["jarkdown", "TEST-456", "--output", str(tmp_path)]
                 ):
                     main()
 

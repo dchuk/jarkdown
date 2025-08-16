@@ -1,6 +1,6 @@
-# Contributing to Jira Download
+# Contributing to Jarkdown
 
-First off, thank you for considering contributing to Jira Download! It's people like you that make this tool better for everyone.
+First off, thank you for considering contributing to Jarkdown! It's people like you that make this tool better for everyone.
 
 ## How Can I Contribute?
 

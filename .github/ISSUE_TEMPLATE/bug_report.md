@@ -30,7 +30,7 @@ Paste any error messages or stack traces here
 **Environment:**
  - OS: [e.g. macOS, Ubuntu, Windows]
  - Python version: [e.g. 3.9.0]
- - jira-download version: [e.g. 0.1.0]
+ - jarkdown version: [e.g. 0.1.0]
  - Jira Cloud version: [if known]
 
 **Configuration**

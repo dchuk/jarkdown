@@ -23,7 +23,7 @@ Describe how you would use this feature in your workflow.
 If applicable, provide an example of how this feature would work:
 ```bash
 # Example command or usage
-jira-download --new-feature ...
+jarkdown --new-feature ...
 ```
 
 **Additional context**

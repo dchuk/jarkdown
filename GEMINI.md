@@ -1,8 +1,8 @@
 # Project Overview
 
-This project is a command-line tool named "Jira Download" that exports Jira Cloud issues to Markdown files. It fetches issue data from the Jira Cloud REST API, downloads all attachments, and converts the issue description and comments from HTML to GitHub-flavored Markdown. The tool is written in Python and uses the `requests` library for API communication, `markdownify` for HTML to Markdown conversion, and `python-dotenv` for managing environment variables.
+This project is a command-line tool named "Jarkdown" that exports Jira Cloud issues to Markdown files. It fetches issue data from the Jira Cloud REST API, downloads all attachments, and converts the issue description and comments from HTML to GitHub-flavored Markdown. The tool is written in Python and uses the `requests` library for API communication, `markdownify` for HTML to Markdown conversion, and `python-dotenv` for managing environment variables.
 
-The main entry point for the application is `src/jira_download/jira_download.py`, which contains the command-line interface logic. The project is structured into several modules:
+The main entry point for the application is `src/jarkdown/jarkdown.py`, which contains the command-line interface logic. The project is structured into several modules:
 
 - `jira_api_client.py`: Handles all communication with the Jira Cloud REST API.
 - `attachment_handler.py`: Manages the downloading and saving of issue attachments.
@@ -64,7 +64,7 @@ pytest
 To run tests with coverage:
 
 ```bash
-pytest --cov=src/jira_download --cov-report=term-missing
+pytest --cov=src/jarkdown --cov-report=term-missing
 ```
 
 # Development Conventions

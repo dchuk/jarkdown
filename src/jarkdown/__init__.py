@@ -1,1 +1,1 @@
-"""Jira Download - Export Jira issues to markdown with attachments."""
+"""Jarkdown - Export Jira issues to markdown with attachments."""

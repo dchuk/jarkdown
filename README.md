@@ -1,4 +1,4 @@
-# Jira Download - Export Jira Issues to Markdown
+# Jarkdown - Export Jira Issues to Markdown
 
 [![Documentation Status](https://readthedocs.org/projects/jarkdown/badge/?version=latest)](https://jarkdown.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
