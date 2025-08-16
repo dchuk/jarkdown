@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jarkdown"
-version = "1.1.0"
+version = "0.1.0"
 description = "Export Jira Cloud issues to Markdown with attachments"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Chris Reynolds", email = "chris@chrisbyboston.com"}
+    {name = "Chris Reynolds", email = "chrisbyboston@gmail.com"}
 ]
 maintainers = [
-    {name = "Chris Reynolds", email = "chris@chrisbyboston.com"}
+    {name = "Chris Reynolds", email = "chrisbyboston@gmail.com"}
 ]
 requires-python = ">=3.8"
 classifiers = [

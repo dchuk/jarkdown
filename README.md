@@ -6,27 +6,36 @@
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/chrisbyboston/jarkdown/actions)
 [![Coverage](https://img.shields.io/badge/coverage-87%25-green)](https://github.com/chrisbyboston/jarkdown/actions)
 
-A command-line tool that exports Jira Cloud issues into markdown files with all attachments downloaded locally and referenced inline.
+A command-line tool that exports Jira Cloud issues into clean, portable Markdown files, optimized for AI-powered development workflows.
+
+Jarkdown is designed to bridge the gap between Jira and your local environment. It makes it easy to archive tickets, share them with others, or provide deep, accurate context to AI coding assistants, ensuring they understand the full "vibe" of a task.
+
+## Primary Use Case: Context for AI Coding Assistants ("Vibecoding")
+
+A primary use case for Jarkdown is to provide rich, accurate context to AI-powered coding assistants (like GitHub Copilot, Gemini, Claude, etc.).
+
+The main challenge when using AI for a development task is its lack of access to the context inside a Jira ticket—the requirements, discussions, attachments, and metadata. Jarkdown solves this by exporting the entire issue into a clean, self-contained Markdown file with all attachments downloaded locally and referenced.
+
+This file can be easily included in a prompt, giving the assistant all the necessary information to generate highly relevant and accurate code. This workflow, sometimes referred to as **"vibecoding,"** ensures the AI understands the complete scope and nuance of the task, leading to significantly better results and faster development cycles.
 
 ## Documentation
 
 Full documentation is available at [jarkdown.readthedocs.io](https://jarkdown.readthedocs.io/), including:
 
 - [Getting Started for Beginners](https://jarkdown.readthedocs.io/en/latest/beginners_guide.html) - Step-by-step guide for new users
+- [AI-Powered Development](https://jarkdown.readthedocs.io/en/latest/use_case_ai_context.html) - A guide on the "vibecoding" workflow
 - [Installation Guide](https://jarkdown.readthedocs.io/en/latest/installation.html)
 - [Usage Guide](https://jarkdown.readthedocs.io/en/latest/usage.html)
 - [Configuration](https://jarkdown.readthedocs.io/en/latest/configuration.html)
-- [API Reference](https://jarkdown.readthedocs.io/en/latest/api_reference.html)
 - [Contributing](https://jarkdown.readthedocs.io/en/latest/contributing.html)
 
-## Features
+## Key Features
 
-- Fetches Jira issues via the Jira Cloud REST API
-- Downloads all attachments to a local folder
-- Converts issue descriptions from HTML to GitHub-flavored Markdown
-- Preserves formatting (headings, lists, code blocks, tables)
-- Embeds images inline and links other file types
-- Maintains the same visual structure as in Jira
+- **AI-Ready Exports:** Generates clean, portable Markdown perfect for AI prompts.
+- **Complete Context:** Fetches issue descriptions, metadata, and downloads all attachments locally.
+- **Preserves Formatting:** Converts Jira's HTML to GitHub-flavored Markdown, keeping headings, lists, code blocks, and tables intact.
+- **Embeds Local Links:** Automatically references downloaded attachments with local links in the Markdown file.
+- **Simple and Fast:** A command-line tool that is easy to script and integrate into your workflow.
 
 ## Installation
 

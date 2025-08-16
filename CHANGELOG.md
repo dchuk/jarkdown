@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2025-08-16
+
 ### Added
 - Initial release of jarkdown
 - Export single Jira Cloud issues to Markdown format
@@ -23,21 +25,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contributing guidelines
 - GitHub Actions CI/CD pipeline
 - Modern Python packaging with pyproject.toml
+- Support for Jira Cloud REST API v3
+- Command-line interface
 
 ### Security
 - API tokens stored in environment variables
 - No credentials in code or logs
 - Secure HTTPS connections to Jira Cloud
-
-## [0.1.0] - TBD
-
-### Added
-- First public release
-- Basic functionality for exporting Jira issues to Markdown
-- Support for Jira Cloud REST API v3
-- Attachment download and management
-- HTML to Markdown conversion
-- Command-line interface
 
 ### Known Limitations
 - Single issue export only (bulk export planned)
