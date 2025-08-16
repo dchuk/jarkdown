@@ -54,10 +54,35 @@ Unsure where to begin contributing? You can start by looking through these `begi
    pip install -e ".[dev]"
    ```
 
-5. **Create a branch** for your feature or fix:
+5. **Set up pre-commit hooks** (one-time setup):
+   ```bash
+   pre-commit install
+   ```
+   This will automatically run linting and tests before each commit to ensure code quality.
+
+6. **Create a branch** for your feature or fix:
    ```bash
    git checkout -b feature/your-feature-name
    ```
+
+## Setting Up Pre-commit Hooks
+
+After setting up your development environment, run the following command **once** to install the pre-commit hooks:
+
+```bash
+pre-commit install
+```
+
+This installs Git hooks that will automatically run before each commit to:
+- Run `ruff` to check and fix code style issues
+- Run `pytest` to ensure all tests pass
+
+If either check fails, the commit will be aborted, and you'll see the error output in your terminal. Fix the issues and try committing again.
+
+You can also manually run the hooks on all files at any time:
+```bash
+pre-commit run --all-files
+```
 
 ## Running Tests
 
