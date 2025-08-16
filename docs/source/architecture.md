@@ -111,7 +111,7 @@ Converts Jira HTML content to clean Markdown.
 
 Custom exceptions for clear error handling.
 
-```python
+```
 JiraDownloadError (base)
 ├── ConfigurationError     # Missing/invalid config
 ├── JiraApiError           # API communication issues

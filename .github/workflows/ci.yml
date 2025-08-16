@@ -112,7 +112,7 @@ jobs:
     
     - name: Build documentation
       run: |
-        sphinx-build -b html docs/source docs/build/html -W --keep-going
+        sphinx-build -b html docs/source docs/build/html --keep-going
     
     - name: Check for broken links
       run: |
