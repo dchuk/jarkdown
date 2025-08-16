@@ -258,12 +258,15 @@ class TestCLI:
                     # Verify comments section exists
                     assert '## Comments' in content
                     assert '**John Doe** - _2025-08-16 10:30 AM_' in content
-                    assert '> This is the first comment' in content
+                    assert 'This is the first comment' in content
                     assert '**Jane Smith** - _2025-08-16 11:15 AM_' in content
                     assert '**Alice Developer** - _2025-08-16 02:45 PM_' in content
                     
+                    # Check that comments are separated by horizontal rules
+                    assert '---' in content
+                    
                     # Verify attachment links in comments are replaced
-                    assert '> ![new_mockup.png](new_mockup.png)' in content
-                    # Check that no secure attachment URLs remain (but the issue link is OK)
-                    assert '/secure/attachment/' not in content
+                    assert '![new_mockup.png](new_mockup.png)' in content
+                    # Check that no secure attachment URLs remain
+                    assert '/secure/attachment/' not in content.replace('[TEST-456](https://example.atlassian.net/browse/TEST-456)', '')
                     assert '/attachment/content/' not in content

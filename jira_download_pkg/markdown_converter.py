@@ -116,6 +116,133 @@ class MarkdownConverter:
         
         return markdown_content
     
+    def _parse_adf_to_markdown(self, adf_content):
+        """Parse Atlassian Document Format to Markdown.
+        
+        Args:
+            adf_content: ADF structure (dict) or string content
+            
+        Returns:
+            str: Converted markdown text
+        """
+        if isinstance(adf_content, str):
+            # If it's just a string, return it as-is
+            return adf_content
+        
+        if not isinstance(adf_content, dict):
+            return ""
+        
+        doc_type = adf_content.get('type', '')
+        
+        # Handle different node types
+        if doc_type == 'doc':
+            # Document root - process all content nodes
+            content = adf_content.get('content', [])
+            return '\n\n'.join(self._parse_adf_to_markdown(node) for node in content)
+        
+        elif doc_type == 'paragraph':
+            # Paragraph - process inline content
+            content = adf_content.get('content', [])
+            if not content:
+                return ""
+            return ''.join(self._parse_adf_to_markdown(node) for node in content)
+        
+        elif doc_type == 'text':
+            # Text node - apply marks if any
+            text = adf_content.get('text', '')
+            marks = adf_content.get('marks', [])
+            
+            for mark in marks:
+                mark_type = mark.get('type', '')
+                if mark_type == 'strong':
+                    text = f"**{text}**"
+                elif mark_type == 'em':
+                    text = f"*{text}*"
+                elif mark_type == 'code':
+                    text = f"`{text}`"
+                elif mark_type == 'link':
+                    href = mark.get('attrs', {}).get('href', '')
+                    text = f"[{text}]({href})"
+            
+            return text
+        
+        elif doc_type == 'bulletList':
+            # Bullet list
+            content = adf_content.get('content', [])
+            items = []
+            for item in content:
+                item_text = self._parse_adf_to_markdown(item)
+                # Add bullet point prefix
+                for line in item_text.split('\n'):
+                    if line:
+                        items.append(f"- {line}")
+            return '\n'.join(items)
+        
+        elif doc_type == 'orderedList':
+            # Ordered list
+            content = adf_content.get('content', [])
+            items = []
+            for i, item in enumerate(content, 1):
+                item_text = self._parse_adf_to_markdown(item)
+                # Add number prefix
+                for j, line in enumerate(item_text.split('\n')):
+                    if line:
+                        if j == 0:
+                            items.append(f"{i}. {line}")
+                        else:
+                            items.append(f"   {line}")
+            return '\n'.join(items)
+        
+        elif doc_type == 'listItem':
+            # List item - process content
+            content = adf_content.get('content', [])
+            return '\n'.join(self._parse_adf_to_markdown(node) for node in content)
+        
+        elif doc_type == 'heading':
+            # Heading
+            level = adf_content.get('attrs', {}).get('level', 1)
+            content = adf_content.get('content', [])
+            text = ''.join(self._parse_adf_to_markdown(node) for node in content)
+            return f"{'#' * level} {text}"
+        
+        elif doc_type == 'codeBlock':
+            # Code block
+            content = adf_content.get('content', [])
+            code = '\n'.join(self._parse_adf_to_markdown(node) for node in content)
+            language = adf_content.get('attrs', {}).get('language', '')
+            return f"```{language}\n{code}\n```"
+        
+        elif doc_type == 'blockquote':
+            # Blockquote
+            content = adf_content.get('content', [])
+            quote_text = '\n'.join(self._parse_adf_to_markdown(node) for node in content)
+            # Add > prefix to each line
+            return '\n'.join(f"> {line}" for line in quote_text.split('\n'))
+        
+        elif doc_type == 'mediaSingle' or doc_type == 'media':
+            # Media/attachment
+            attrs = adf_content.get('attrs', {})
+            # Try to get filename or alt text
+            filename = attrs.get('alt', '') or attrs.get('title', '') or 'attachment'
+            # For now, just create a placeholder that will be replaced later
+            return f"![{filename}](attachment)"
+        
+        elif doc_type == 'mention':
+            # User mention
+            attrs = adf_content.get('attrs', {})
+            text = attrs.get('text', '') or attrs.get('id', '@user')
+            return f"@{text}"
+        
+        elif doc_type == 'hardBreak':
+            return '\n'
+        
+        else:
+            # Unknown type - try to process content if it exists
+            content = adf_content.get('content', [])
+            if content:
+                return '\n'.join(self._parse_adf_to_markdown(node) for node in content)
+            return ""
+    
     def _compose_comments_section(self, issue_data, downloaded_attachments):
         """Compose the comments section of the markdown.
         
@@ -137,7 +264,7 @@ class MarkdownConverter:
         lines.append("## Comments")
         lines.append("")
         
-        for comment in comments:
+        for i, comment in enumerate(comments):
             # Extract author and date
             author = comment.get('author', {}).get('displayName', 'Unknown')
             created = comment.get('created', '')
@@ -161,29 +288,42 @@ class MarkdownConverter:
             else:
                 formatted_date = 'Unknown date'
             
-            # Get the rendered body
-            body_html = comment.get('renderedBody', '')
-            if not body_html and comment.get('body'):
-                # Fallback to plain text body if no rendered version
-                body_html = f"<p>{comment.get('body')}</p>"
+            # Format the comment header
+            lines.append(f"**{author}** - _{formatted_date}_")
+            lines.append("")
             
-            # Convert HTML to Markdown
-            body_md = self.convert_html_to_markdown(body_html) if body_html else '*No comment body*'
+            # Process the comment body
+            # Check if we have rendered HTML first
+            body_html = comment.get('renderedBody', '')
+            
+            if body_html:
+                # Use rendered HTML if available
+                body_md = self.convert_html_to_markdown(body_html)
+            else:
+                # Check for ADF body structure
+                body = comment.get('body')
+                if isinstance(body, dict):
+                    # Parse ADF structure
+                    body_md = self._parse_adf_to_markdown(body)
+                elif isinstance(body, str) and body:
+                    # Plain text body
+                    body_md = body
+                else:
+                    body_md = '*No comment body*'
             
             # Replace attachment links in the comment
             body_md = self.replace_attachment_links(body_md, downloaded_attachments)
             
-            # Format the comment with author, date, and body
-            lines.append(f"**{author}** - _{formatted_date}_")
+            # Add the comment body
+            lines.append(body_md)
             
-            # Add body as blockquote
-            for line in body_md.split('\n'):
-                if line.strip():
-                    lines.append(f"> {line}")
-                else:
-                    lines.append(">")
-            
-            lines.append("")  # Add spacing between comments
+            # Add separator between comments (except after the last one)
+            if i < len(comments) - 1:
+                lines.append("")
+                lines.append("---")
+                lines.append("")
+        
+        lines.append("")  # Add final spacing
         
         return lines
     

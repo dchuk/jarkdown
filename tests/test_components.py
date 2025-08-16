@@ -447,23 +447,25 @@ class TestMarkdownConverter:
         # Check comments section exists
         assert '## Comments' in result
         
-        # Check first comment
+        # Check first comment header and body
         assert '**John Doe** - _2025-08-16 10:30 AM_' in result
-        assert '> This is the first comment. It looks like we need to update the design mockups.' in result
-        assert '> ![new_mockup.png](new_mockup.png)' in result  # Attachment link replaced
+        assert 'This is the first comment. It looks like we need to update the design mockups.' in result
+        assert '![new_mockup.png](new_mockup.png)' in result  # Attachment link replaced
         
         # Check second comment
         assert '**Jane Smith** - _2025-08-16 11:15 AM_' in result
-        assert '> Thanks, John! This looks **much better**. I have approved the changes.' in result
+        assert 'Thanks, John! This looks **much better**. I have approved the changes.' in result
         
         # Check third comment with list
         assert '**Alice Developer** - _2025-08-16 02:45 PM_' in result
         assert "I've reviewed the error logs attached to this issue" in result
-        assert '> * Memory leak in the connection pool' in result or '> - Memory leak in the connection pool' in result
-        assert '> * Incorrect timeout settings' in result or '> - Incorrect timeout settings' in result
+        assert '* Memory leak in the connection pool' in result or '- Memory leak in the connection pool' in result
+        assert '* Incorrect timeout settings' in result or '- Incorrect timeout settings' in result
         
-        # Ensure attachment URLs are replaced (but not the issue link at the top)
-        # Check that no secure attachment URLs remain
+        # Check that comments are separated by horizontal rules
+        assert '---' in result
+        
+        # Ensure attachment URLs are replaced
         assert '/secure/attachment/' not in result
         assert '/attachment/content/' not in result
     
@@ -518,4 +520,72 @@ class TestMarkdownConverter:
         
         assert '## Comments' in result
         assert '**Test User**' in result
-        assert '> *No comment body*' in result
+        assert '*No comment body*' in result
+    
+    def test_adf_comment_parsing(self, markdown_converter):
+        """Test parsing of Atlassian Document Format comments"""
+        issue_data = {
+            'key': 'TEST-ADF',
+            'fields': {
+                'summary': 'Test ADF Comments',
+                'issuetype': {'name': 'Task'},
+                'status': {'name': 'Open'},
+                'comment': {
+                    'comments': [
+                        {
+                            'author': {'displayName': 'Test User'},
+                            'created': '2025-08-16T10:00:00.000+0000',
+                            'body': {
+                                'type': 'doc',
+                                'version': 1,
+                                'content': [
+                                    {
+                                        'type': 'paragraph',
+                                        'content': [
+                                            {'type': 'text', 'text': 'This is '},
+                                            {'type': 'text', 'text': 'bold', 'marks': [{'type': 'strong'}]},
+                                            {'type': 'text', 'text': ' and '},
+                                            {'type': 'text', 'text': 'italic', 'marks': [{'type': 'em'}]},
+                                            {'type': 'text', 'text': ' text.'}
+                                        ]
+                                    },
+                                    {
+                                        'type': 'bulletList',
+                                        'content': [
+                                            {
+                                                'type': 'listItem',
+                                                'content': [
+                                                    {
+                                                        'type': 'paragraph',
+                                                        'content': [{'type': 'text', 'text': 'First item'}]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                'type': 'listItem',
+                                                'content': [
+                                                    {
+                                                        'type': 'paragraph',
+                                                        'content': [{'type': 'text', 'text': 'Second item'}]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            'renderedFields': {}
+        }
+        
+        result = markdown_converter.compose_markdown(issue_data, [])
+        
+        # Check ADF was properly parsed
+        assert '## Comments' in result
+        assert '**Test User**' in result
+        assert 'This is **bold** and *italic* text.' in result
+        assert '- First item' in result
+        assert '- Second item' in result
