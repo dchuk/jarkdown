@@ -169,7 +169,7 @@ git checkout -b feature/your-feature-name
 2. **Make your changes** and ensure tests pass:
 ```bash
 pytest
-pytest --cov=src/jira_download --cov-report=term-missing
+pytest --cov=src/jarkdown --cov-report=term-missing
 ```
 
 3. **Commit your changes** (pre-commit hooks will run automatically):
@@ -201,7 +201,7 @@ Run the test suite:
 pytest
 
 # Run with coverage
-pytest --cov=src/jira_download --cov-report=term-missing
+pytest --cov=src/jarkdown --cov-report=term-missing
 
 # Run specific test file
 pytest tests/test_cli.py

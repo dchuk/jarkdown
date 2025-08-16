@@ -37,7 +37,7 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        pytest --cov=jira_download --cov-report=term-missing --cov-report=xml
+        pytest --cov=src/jarkdown --cov-report=term-missing --cov-report=xml
 
     - name: Upload coverage reports to Codecov
       if: matrix.python-version == '3.11'

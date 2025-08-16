@@ -68,10 +68,10 @@ Before submitting a pull request, make sure all tests pass:
 pytest
 
 # Run with coverage report
-pytest --cov=jira_download --cov-report=term-missing
+pytest --cov=src/jarkdown --cov-report=term-missing
 
 # Run specific test file
-pytest tests/test_jira_downloader.py
+pytest tests/test_cli.py
 
 # Run with verbose output
 pytest -v
