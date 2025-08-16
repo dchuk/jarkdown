@@ -51,7 +51,7 @@ This phase involves writing the core documentation content. All files will be cr
     *   Create a `toctree` (table of contents) to structure the entire documentation site.
 2.  **`installation.md`:**
     *   Provide clear, copy-paste-friendly installation instructions.
-    *   Include sections for both `pip install jira-download` (once published) and installing from source.
+    *   Include sections for both `pip install jarkdown` (once published) and installing from source.
     *   Detail the environment variable setup with clear instructions on how to get a Jira API token.
 3.  **`usage.md` (User Guide):**
     *   Create a "Quickstart" section showing the most common command.
@@ -89,7 +89,7 @@ This phase ensures the documentation stays up-to-date automatically.
 1.  **Create a Read the Docs Account:**
     *   Sign up for a free account on [readthedocs.org](https://readthedocs.org/).
 2.  **Import the GitHub Repository:**
-    *   Link the GitHub account and import the `jira-download` repository.
+    *   Link the GitHub account and import the `jarkdown` repository.
 3.  **Trigger the First Build:**
     *   Read the Docs will automatically detect the `.readthedocs.yaml` file and build the documentation.
 4.  **Update the `README.md`:**
@@ -97,4 +97,4 @@ This phase ensures the documentation stays up-to-date automatically.
 
 ## 4. Expected Outcome
 
-Upon completion of this plan, the `jira-download` project will have a professional, comprehensive, and beautiful documentation website. This will dramatically improve the experience for all users, lower the barrier for new contributors, and establish the project as a high-quality, well-maintained tool.
+Upon completion of this plan, the `jarkdown` project will have a professional, comprehensive, and beautiful documentation website. This will dramatically improve the experience for all users, lower the barrier for new contributors, and establish the project as a high-quality, well-maintained tool.

@@ -19,15 +19,15 @@ from .jira_api_client import JiraApiClient
 from .attachment_handler import AttachmentHandler
 from .markdown_converter import MarkdownConverter
 from .exceptions import (
-    JiraDownloadError,
+    JarkdownError,
     ConfigurationError,
 )
 
 
 def get_version():
-    """Get the version of jira-download."""
+    """Get the version of jarkdown."""
     try:
-        return version("jira-download")
+        return version("jarkdown")
     except PackageNotFoundError:
         return "unknown"
 
@@ -44,7 +44,7 @@ def export_issue(api_client, issue_key, output_dir=None):
         Path: The output directory where files were saved
 
     Raises:
-        JiraDownloadError: If export fails
+        JarkdownError: If export fails
     """
     logger = logging.getLogger(__name__)
 
@@ -92,8 +92,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  jira-download PROJ-123
-  jira-download PROJ-123 --output ~/Documents/jira-exports
+  jarkdown PROJ-123
+  jarkdown PROJ-123 --output ~/Documents/jira-exports
 
 Environment variables:
   JIRA_DOMAIN     - Your Jira domain (e.g., your-company.atlassian.net)
@@ -143,8 +143,8 @@ Environment variables:
         api_client = JiraApiClient(domain, email, api_token)
         export_issue(api_client, args.issue_key, args.output)
 
-    except JiraDownloadError as e:
-        # Catch all JiraDownloadError subclasses with a single handler
+    except JarkdownError as e:
+        # Catch all JarkdownError subclasses with a single handler
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
     except KeyboardInterrupt:

@@ -1,10 +1,10 @@
 # Architecture
 
-This document describes the internal architecture of jira-download, explaining how components work together to export Jira issues.
+This document describes the internal architecture of jarkdown, explaining how components work together to export Jira issues.
 
 ## Overview
 
-jira-download follows a modular architecture with clear separation of concerns:
+jarkdown follows a modular architecture with clear separation of concerns:
 
 ```
 User Input → CLI → API Client → Data Processing → File Output
@@ -16,7 +16,7 @@ User Input → CLI → API Client → Data Processing → File Output
 
 ## Core Components
 
-### CLI Layer (`jira_download.py`)
+### CLI Layer (`jarkdown.py`)
 
 The entry point and orchestrator of the application.
 
@@ -112,7 +112,7 @@ Converts Jira HTML content to clean Markdown.
 Custom exceptions for clear error handling.
 
 ```
-JiraDownloadError (base)
+JarkdownError (base)
 ├── ConfigurationError     # Missing/invalid config
 ├── JiraApiError           # API communication issues
 │   ├── AuthenticationError    # 401 responses
@@ -131,7 +131,7 @@ JiraDownloadError (base)
 ### 1. Initialization
 
 ```python
-# User runs: jira-download PROJ-123 --output /path
+# User runs: jarkdown PROJ-123 --output /path
 
 1. CLI validates arguments
 2. Load .env file with python-dotenv
@@ -271,7 +271,7 @@ CLI tested with mocked components:
 
 ```python
 # Test full workflow with mocks
-@patch('jira_download.JiraApiClient')
+@patch('jarkdown.JiraApiClient')
 def test_export_workflow(mock_client):
     # Test complete export process
 ```
@@ -309,4 +309,4 @@ The architecture prioritizes:
 - **Reliability**: Clear error handling and recovery
 - **Extensibility**: Easy to add new features
 
-This design makes jira-download both powerful and maintainable.
+This design makes jarkdown both powerful and maintainable.

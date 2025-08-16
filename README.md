@@ -1,22 +1,22 @@
 # Jira Download - Export Jira Issues to Markdown
 
-[![Documentation Status](https://readthedocs.org/projects/jira-download/badge/?version=latest)](https://jira-download.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/jarkdown/badge/?version=latest)](https://jarkdown.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/chrisbyboston/jira-download/actions)
-[![Coverage](https://img.shields.io/badge/coverage-87%25-green)](https://github.com/chrisbyboston/jira-download/actions)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/chrisbyboston/jarkdown/actions)
+[![Coverage](https://img.shields.io/badge/coverage-87%25-green)](https://github.com/chrisbyboston/jarkdown/actions)
 
 A command-line tool that exports Jira Cloud issues into markdown files with all attachments downloaded locally and referenced inline.
 
 ## Documentation
 
-Full documentation is available at [jira-download.readthedocs.io](https://jira-download.readthedocs.io/), including:
+Full documentation is available at [jarkdown.readthedocs.io](https://jarkdown.readthedocs.io/), including:
 
-- [Installation Guide](https://jira-download.readthedocs.io/en/latest/installation.html)
-- [Usage Guide](https://jira-download.readthedocs.io/en/latest/usage.html)
-- [Configuration](https://jira-download.readthedocs.io/en/latest/configuration.html)
-- [API Reference](https://jira-download.readthedocs.io/en/latest/api_reference.html)
-- [Contributing](https://jira-download.readthedocs.io/en/latest/contributing.html)
+- [Installation Guide](https://jarkdown.readthedocs.io/en/latest/installation.html)
+- [Usage Guide](https://jarkdown.readthedocs.io/en/latest/usage.html)
+- [Configuration](https://jarkdown.readthedocs.io/en/latest/configuration.html)
+- [API Reference](https://jarkdown.readthedocs.io/en/latest/api_reference.html)
+- [Contributing](https://jarkdown.readthedocs.io/en/latest/contributing.html)
 
 ## Features
 
@@ -31,15 +31,15 @@ Full documentation is available at [jira-download.readthedocs.io](https://jira-d
 
 ### Quick Install (Coming Soon)
 ```bash
-pip install jira-download
+pip install jarkdown
 ```
 
 ### Install from Source
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/chrisbyboston/jira-download.git
-cd jira-download
+git clone https://github.com/chrisbyboston/jarkdown.git
+cd jarkdown
 ```
 
 2. Install dependencies:
@@ -66,22 +66,22 @@ To get a Jira API token:
 
 Basic usage:
 ```bash
-jira-download ISSUE-KEY
+jarkdown ISSUE-KEY
 ```
 
 Examples:
 ```bash
 # Download an issue to the current directory
-jira-download PROJ-123
+jarkdown PROJ-123
 
 # Download to a specific directory
-jira-download PROJ-123 --output ~/Documents/jira-exports
+jarkdown PROJ-123 --output ~/Documents/jira-exports
 
 # Enable verbose logging
-jira-download PROJ-123 --verbose
+jarkdown PROJ-123 --verbose
 
 # Show version
-jira-download --version
+jarkdown --version
 ```
 
 ## Output Structure
@@ -143,8 +143,8 @@ We welcome contributions! Here's how to get started:
 
 1. **Fork and clone** the repository:
 ```bash
-git clone https://github.com/YOUR-USERNAME/jira-download.git
-cd jira-download
+git clone https://github.com/YOUR-USERNAME/jarkdown.git
+cd jarkdown
 ```
 
 2. **Create a virtual environment** and install dependencies:
@@ -209,7 +209,7 @@ pytest tests/test_cli.py
 
 ### Reporting Issues
 
-Please use the [GitHub issue tracker](https://github.com/chrisbyboston/jira-download/issues) to report bugs or request features.
+Please use the [GitHub issue tracker](https://github.com/chrisbyboston/jarkdown/issues) to report bugs or request features.
 
 ## License
 

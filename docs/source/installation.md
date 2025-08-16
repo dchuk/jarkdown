@@ -1,6 +1,6 @@
 # Installation
 
-This guide will walk you through installing jira-download and setting up the required authentication.
+This guide will walk you through installing jarkdown and setting up the required authentication.
 
 ## Prerequisites
 
@@ -13,7 +13,7 @@ This guide will walk you through installing jira-download and setting up the req
 Once published to PyPI, you'll be able to install with:
 
 ```bash
-pip install jira-download
+pip install jarkdown
 ```
 
 ## Install from Source
@@ -22,8 +22,8 @@ For the latest development version or to contribute:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/jira-download.git
-cd jira-download
+git clone https://github.com/yourusername/jarkdown.git
+cd jarkdown
 
 # Create a virtual environment (recommended)
 python3 -m venv venv
@@ -35,14 +35,14 @@ pip install -e ".[dev]"
 
 ## Authentication Setup
 
-jira-download requires three environment variables for authentication:
+jarkdown requires three environment variables for authentication:
 
 ### 1. Get Your Atlassian API Token
 
 1. Log in to your Atlassian account
 2. Go to [Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens)
 3. Click "Create API token"
-4. Give it a descriptive name (e.g., "jira-download")
+4. Give it a descriptive name (e.g., "jarkdown")
 5. Copy the generated token - you won't be able to see it again!
 
 ### 2. Create Environment File
@@ -76,10 +76,10 @@ Test that everything is working:
 
 ```bash
 # Check the installation
-jira-download --help
+jarkdown --help
 
 # Test with a known issue
-jira-download PROJ-123
+jarkdown PROJ-123
 ```
 
 If you see the issue downloaded successfully, you're all set!
@@ -88,7 +88,7 @@ If you see the issue downloaded successfully, you're all set!
 
 ### Command not found
 
-If `jira-download` isn't recognized:
+If `jarkdown` isn't recognized:
 
 ```bash
 # Ensure you're in the virtual environment
@@ -109,7 +109,7 @@ pip install -e .
 On Unix-like systems, you might need to make the script executable:
 
 ```bash
-chmod +x jira-download
+chmod +x jarkdown
 ```
 
 ## Next Steps

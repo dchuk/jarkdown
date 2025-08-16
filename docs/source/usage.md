@@ -1,13 +1,13 @@
 # Usage Guide
 
-This guide covers all the ways to use jira-download, from basic exports to advanced options.
+This guide covers all the ways to use jarkdown, from basic exports to advanced options.
 
 ## Quick Start
 
 The simplest usage - export a single issue:
 
 ```bash
-jira-download PROJ-123
+jarkdown PROJ-123
 ```
 
 This creates a folder named `PROJ-123/` in your current directory containing:
@@ -19,7 +19,7 @@ This creates a folder named `PROJ-123/` in your current directory containing:
 ### Basic Syntax
 
 ```bash
-jira-download ISSUE-KEY [OPTIONS]
+jarkdown ISSUE-KEY [OPTIONS]
 ```
 
 ### Available Options
@@ -30,10 +30,10 @@ Specify where to save the exported issue:
 
 ```bash
 # Save to specific directory
-jira-download PROJ-123 --output ~/Documents/jira-exports
+jarkdown PROJ-123 --output ~/Documents/jira-exports
 
 # Use short form
-jira-download PROJ-123 -o /tmp/exports
+jarkdown PROJ-123 -o /tmp/exports
 ```
 
 If the output directory doesn't exist, it will be created.
@@ -43,7 +43,7 @@ If the output directory doesn't exist, it will be created.
 Enable detailed output to see what's happening:
 
 ```bash
-jira-download PROJ-123 --verbose
+jarkdown PROJ-123 --verbose
 ```
 
 This shows:
@@ -57,7 +57,7 @@ This shows:
 Display help information:
 
 ```bash
-jira-download --help
+jarkdown --help
 ```
 
 ## Output Structure
@@ -87,9 +87,9 @@ Example structure:
 ```markdown
 # PROJ-123: Implement user authentication
 
-**Type:** Story  
-**Status:** In Progress  
-**Priority:** High  
+**Type:** Story
+**Status:** In Progress
+**Priority:** High
 
 ## Details
 - **Reporter:** Jane Doe
@@ -116,7 +116,7 @@ Export all completed issues from a sprint:
 
 ```bash
 for issue in PROJ-101 PROJ-102 PROJ-103; do
-    jira-download $issue --output ~/sprints/sprint-23
+    jarkdown $issue --output ~/sprints/sprint-23
 done
 ```
 
@@ -125,7 +125,7 @@ done
 Export issues to include in project documentation:
 
 ```bash
-jira-download EPIC-1 --output docs/requirements
+jarkdown EPIC-1 --output docs/requirements
 ```
 
 ### Backup Before Migration
@@ -135,7 +135,7 @@ Export critical issues before system changes:
 ```bash
 # Create timestamped backup
 OUTPUT_DIR="backup-$(date +%Y%m%d)"
-jira-download CRITICAL-1 --output $OUTPUT_DIR --verbose
+jarkdown CRITICAL-1 --output $OUTPUT_DIR --verbose
 ```
 
 ### Offline Access
@@ -144,7 +144,7 @@ Download issues for offline work:
 
 ```bash
 # Export to synced folder
-jira-download TASK-456 --output ~/Dropbox/jira-offline
+jarkdown TASK-456 --output ~/Dropbox/jira-offline
 ```
 
 ## Working with Attachments
@@ -162,7 +162,7 @@ For issues with many or large attachments:
 
 ```bash
 # Use verbose to monitor progress
-jira-download PROJ-789 --verbose
+jarkdown PROJ-789 --verbose
 ```
 
 The tool uses streaming downloads to handle large files efficiently.
@@ -198,14 +198,14 @@ If a download fails partway through:
 rm -rf PROJ-123/
 
 # Retry with verbose output
-jira-download PROJ-123 --verbose
+jarkdown PROJ-123 --verbose
 ```
 
 ## Advanced Usage
 
 ### Scripting and Automation
 
-Use jira-download in scripts:
+Use jarkdown in scripts:
 
 ```python
 #!/usr/bin/env python3
@@ -217,7 +217,7 @@ output_base = '/path/to/exports'
 
 for issue in issues:
     result = subprocess.run(
-        ['jira-download', issue, '--output', output_base],
+        ['jarkdown', issue, '--output', output_base],
         capture_output=True,
         text=True
     )
@@ -233,11 +233,11 @@ Process exported Markdown with other tools:
 
 ```bash
 # Export and convert to HTML
-jira-download PROJ-123
+jarkdown PROJ-123
 pandoc PROJ-123/PROJ-123.md -o PROJ-123.html
 
 # Export and create PDF
-jira-download PROJ-456
+jarkdown PROJ-456
 pandoc PROJ-456/PROJ-456.md -o PROJ-456.pdf --pdf-engine=xelatex
 ```
 

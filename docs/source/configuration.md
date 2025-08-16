@@ -1,10 +1,10 @@
 # Configuration
 
-jira-download uses environment variables for configuration. This keeps sensitive credentials out of your code and command history.
+jarkdown uses environment variables for configuration. This keeps sensitive credentials out of your code and command history.
 
 ## Required Environment Variables
 
-These three variables must be set for jira-download to work:
+These three variables must be set for jarkdown to work:
 
 ### JIRA_DOMAIN
 
@@ -145,7 +145,7 @@ For enhanced security, consider:
 1. **Operating System Keychains**
    ```bash
    # macOS Keychain example
-   security add-generic-password -s "jira-download" -a "api-token" -w "your_token"
+   security add-generic-password -s "jarkdown" -a "api-token" -w "your_token"
    ```
 
 2. **Password Managers**
@@ -175,7 +175,7 @@ echo "JIRA_API_TOKEN: ${JIRA_API_TOKEN:=NOT SET}"
 Test with a known accessible issue:
 
 ```bash
-jira-download PROJ-1 --verbose
+jarkdown PROJ-1 --verbose
 ```
 
 ### Common Configuration Issues
@@ -215,10 +215,10 @@ For multiple Jira instances:
 
 # Switch between them
 cp .env.prod .env
-jira-download PROD-123
+jarkdown PROD-123
 
 cp .env.dev .env
-jira-download DEV-456
+jarkdown DEV-456
 ```
 
 ### Configuration in CI/CD
@@ -232,8 +232,8 @@ For GitHub Actions:
     JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
     JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
   run: |
-    pip install jira-download
-    jira-download PROJ-123
+    pip install jarkdown
+    jarkdown PROJ-123
 ```
 
 ### Proxy Configuration
@@ -245,8 +245,8 @@ If behind a corporate proxy:
 export HTTP_PROXY=http://proxy.company.com:8080
 export HTTPS_PROXY=http://proxy.company.com:8080
 
-# Run jira-download
-jira-download PROJ-123
+# Run jarkdown
+jarkdown PROJ-123
 ```
 
 ## Troubleshooting Configuration
@@ -258,7 +258,7 @@ See exactly what's being sent:
 ```bash
 # Enable debug logging (if implemented)
 export JIRA_DEBUG=true
-jira-download PROJ-123 --verbose
+jarkdown PROJ-123 --verbose
 ```
 
 ### Reset Configuration

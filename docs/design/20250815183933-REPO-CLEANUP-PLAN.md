@@ -36,12 +36,12 @@ The following steps will be executed to resolve these issues.
     2.  Instead, directly call `main()`. Since a successful run does not raise an exception, the absence of one will constitute a pass for that part of the test.
     3.  The existing assertions that check for file creation and content remain correct and will be kept.
 
-### Step 3: Fix the `main()` Function's Error Handling (`jira_download.py`)
+### Step 3: Fix the `main()` Function's Error Handling (`jarkdown.py`)
 
 -   **Task:** Ensure the `main()` function reliably exits with a non-zero status code on any captured exception.
 -   **Action:**
     1.  Review the main `try...except` block in the `main()` function.
-    2.  Ensure that every `except` block (e.g., for `JiraDownloadError`, `Exception`, etc.) concludes with `sys.exit(1)`.
+    2.  Ensure that every `except` block (e.g., for `JarkdownError`, `Exception`, etc.) concludes with `sys.exit(1)`.
     3.  Modify the logic for the environment variable check. It should be inside the `try` block and raise a `ConfigurationError` if variables are missing, allowing the main `except` block to handle the exit uniformly.
 
 ### Step 4: Validate All Fixes

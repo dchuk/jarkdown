@@ -1,12 +1,12 @@
 API Reference
 =============
 
-This section provides detailed API documentation for the jira-download components.
+This section provides detailed API documentation for the jarkdown components.
 
 Main Module
 -----------
 
-.. automodule:: jira_download
+.. automodule:: jarkdown
    :members:
    :undoc-members:
    :show-inheritance:
@@ -14,7 +14,7 @@ Main Module
 JiraApiClient
 -------------
 
-.. autoclass:: jira_api_client.JiraApiClient
+.. autoclass:: jarkdown.jira_api_client.JiraApiClient
    :members:
    :undoc-members:
    :show-inheritance:
@@ -24,20 +24,20 @@ JiraApiClient
 
    Example usage::
 
-       from jira_api_client import JiraApiClient
-       
+       from jarkdown.jira_api_client import JiraApiClient
+
        client = JiraApiClient(
            domain="company.atlassian.net",
            email="user@company.com",
            api_token="your_token"
        )
-       
+
        issue_data = client.get_issue("PROJ-123")
 
 AttachmentHandler
 -----------------
 
-.. autoclass:: attachment_handler.AttachmentHandler
+.. autoclass:: jarkdown.attachment_handler.AttachmentHandler
    :members:
    :undoc-members:
    :show-inheritance:
@@ -47,8 +47,8 @@ AttachmentHandler
 
    Example usage::
 
-       from attachment_handler import AttachmentHandler
-       
+       from jarkdown.attachment_handler import AttachmentHandler
+
        handler = AttachmentHandler(auth_session, verbose=True)
        downloaded = handler.download_attachments(
            attachments_data,
@@ -58,7 +58,7 @@ AttachmentHandler
 MarkdownConverter
 -----------------
 
-.. autoclass:: markdown_converter.MarkdownConverter
+.. autoclass:: jarkdown.markdown_converter.MarkdownConverter
    :members:
    :undoc-members:
    :show-inheritance:
@@ -67,8 +67,8 @@ MarkdownConverter
 
    Example usage::
 
-       from markdown_converter import MarkdownConverter
-       
+       from jarkdown.markdown_converter import MarkdownConverter
+
        converter = MarkdownConverter()
        markdown_content = converter.convert_issue(
            issue_data,
@@ -78,7 +78,7 @@ MarkdownConverter
 Exceptions
 ----------
 
-.. automodule:: exceptions
+.. automodule:: jarkdown.exceptions
    :members:
    :undoc-members:
    :show-inheritance:
@@ -87,7 +87,7 @@ Exceptions
 
    Exception Hierarchy::
 
-       JiraDownloadError
+       JarkdownError
        ├── ConfigurationError
        ├── JiraApiError
        │   ├── AuthenticationError
@@ -96,8 +96,8 @@ Exceptions
 
    Example usage::
 
-       from exceptions import AuthenticationError, IssueNotFoundError
-       
+       from jarkdown.exceptions import AuthenticationError, IssueNotFoundError
+
        try:
            issue = client.get_issue(issue_key)
        except AuthenticationError:

@@ -2,13 +2,13 @@
 
 ## Introduction
 
-We propose a command-line tool **jira-download** that exports a Jira Cloud issue into a markdown file with all its attachments downloaded locally and referenced inline. The tool will use Jira’s REST API (Cloud) to retrieve the issue details (description, attachments, etc.) using an API token for authentication. It will then convert the issue’s content into GitHub-flavored Markdown and save any attached files in a local directory, adjusting the markdown so that attachment links point to the local files. This allows offline viewing or archiving of Jira tickets in a format suitable for GitHub or other Markdown readers.
+We propose a command-line tool **jarkdown** that exports a Jira Cloud issue into a markdown file with all its attachments downloaded locally and referenced inline. The tool will use Jira’s REST API (Cloud) to retrieve the issue details (description, attachments, etc.) using an API token for authentication. It will then convert the issue’s content into GitHub-flavored Markdown and save any attached files in a local directory, adjusting the markdown so that attachment links point to the local files. This allows offline viewing or archiving of Jira tickets in a format suitable for GitHub or other Markdown readers.
 
 **Key Features:**
 - Fetch a specified Jira issue (e.g. PROJ-123) via the Jira Cloud REST API.
 - Download all attachments on the issue to a local folder.
 - Generate a Markdown file containing the issue’s content (description and optional metadata) with inline links/images pointing to the downloaded attachments (mirroring how they appeared in Jira).
-- Operate as a CLI command (jira-download <ISSUE-KEY>) for ease of use.
+- Operate as a CLI command (jarkdown <ISSUE-KEY>) for ease of use.
 
 ## Requirements and Assumptions
 
@@ -25,7 +25,7 @@ We propose a command-line tool **jira-download** that exports a Jira Cloud issue
 
 ## Solution Overview
 
-The solution will be implemented as a CLI program that performs the following high-level steps when a user runs jira-download <ISSUE-KEY>:
+The solution will be implemented as a CLI program that performs the following high-level steps when a user runs jarkdown <ISSUE-KEY>:
 
 1. **Configuration & Auth:** Load Jira Cloud connection info (e.g. base URL like your-domain.atlassian.net) and user credentials (email & API token). Use Basic Auth with email/API token or an Authorization header with the token for API calls. (For example, using Basic Auth as email:APIToken in the HTTP request, as recommended by Atlassian[[1]](https://support.atlassian.com/jira/kb/export-jira-project-attachments-using-rest-api/#:~:text=,curl).)
 2. **Issue Retrieval via API:** Call Jira’s REST API to fetch the issue data. We will use the GET /rest/api/3/issue/{ISSUE-KEY} endpoint with appropriate query parameters to retrieve the fields we need. In particular:
@@ -93,7 +93,7 @@ curl --user "email@example.com:<api\_token>" https://<your-domain>.atlassian.net
 
 This method is illustrated in Atlassian’s documentation[[1]](https://support.atlassian.com/jira/kb/export-jira-project-attachments-using-rest-api/#:~:text=,curl). In code, if using Python requests, we can do requests.get(url, auth=(email, api\_token)). We will make sure the API token and email (or an OAuth token if configured) are provided securely (via environment variables or a config file rather than plaintext arguments).
 
-**CLI Parsing:** Use a CLI argument parser (e.g. Python’s argparse or a Node CLI library) to handle the command jira-download <ISSUE-KEY>. The user will supply the issue key. Optionally, allow flags like --output <dir> to specify a custom output directory, though by default we use the current directory or a folder named after the issue key. We might also allow a verbose flag for debugging or an option to skip downloading attachments (if needed). For now, minimal interface: just the issue key.
+**CLI Parsing:** Use a CLI argument parser (e.g. Python’s argparse or a Node CLI library) to handle the command jarkdown <ISSUE-KEY>. The user will supply the issue key. Optionally, allow flags like --output <dir> to specify a custom output directory, though by default we use the current directory or a folder named after the issue key. We might also allow a verbose flag for debugging or an option to skip downloading attachments (if needed). For now, minimal interface: just the issue key.
 
 **Fetching the Issue:** Construct the API URL for the issue as described. We include the fields we need: at least summary, description, issuetype, status, attachment. (We can include others like priority or custom fields if needed for metadata.) Example GET request:
 

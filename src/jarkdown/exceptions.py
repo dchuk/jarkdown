@@ -1,13 +1,13 @@
-"""Custom exceptions for jira-download."""
+"""Custom exceptions for jarkdown."""
 
 
-class JiraDownloadError(Exception):
-    """Base exception for all jira-download errors."""
+class JarkdownError(Exception):
+    """Base exception for all jarkdown errors."""
 
     pass
 
 
-class JiraApiError(JiraDownloadError):
+class JiraApiError(JarkdownError):
     """Raised when there's an error communicating with the Jira API."""
 
     def __init__(self, message, status_code=None, response=None):
@@ -28,7 +28,7 @@ class IssueNotFoundError(JiraApiError):
     pass
 
 
-class AttachmentDownloadError(JiraDownloadError):
+class AttachmentDownloadError(JarkdownError):
     """Raised when there's an error downloading an attachment."""
 
     def __init__(self, message, filename=None):
@@ -36,7 +36,7 @@ class AttachmentDownloadError(JiraDownloadError):
         self.filename = filename
 
 
-class ConfigurationError(JiraDownloadError):
+class ConfigurationError(JarkdownError):
     """Raised when there's a configuration problem."""
 
     pass

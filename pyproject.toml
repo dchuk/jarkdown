@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "jira-download"
+name = "jarkdown"
 version = "1.1.0"
 description = "Export Jira Cloud issues to Markdown with attachments"
 readme = "README.md"
@@ -39,13 +39,13 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/chrisbyboston/jira-download"
-Documentation = "https://github.com/chrisbyboston/jira-download#readme"
-Repository = "https://github.com/chrisbyboston/jira-download.git"
-Issues = "https://github.com/chrisbyboston/jira-download/issues"
+Homepage = "https://github.com/chrisbyboston/jarkdown"
+Documentation = "https://github.com/chrisbyboston/jarkdown#readme"
+Repository = "https://github.com/chrisbyboston/jarkdown.git"
+Issues = "https://github.com/chrisbyboston/jarkdown/issues"
 
 [project.scripts]
-jira-download = "jira_download.jira_download:main"
+jarkdown = "jarkdown.jarkdown:main"
 
 [project.optional-dependencies]
 dev = [
@@ -57,7 +57,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["jira_download*"]
+include = ["jarkdown*"]
 exclude = ["tests*"]
 
 [tool.pytest.ini_options]
@@ -68,7 +68,7 @@ python_functions = ["test_*"]
 addopts = "-v --tb=short"
 
 [tool.coverage.run]
-source = ["src/jira_download"]
+source = ["src/jarkdown"]
 omit = ["tests/*", "venv/*"]
 
 [tool.coverage.report]

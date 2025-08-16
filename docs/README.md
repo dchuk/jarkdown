@@ -1,6 +1,6 @@
 # Documentation
 
-This directory contains all documentation for the jira-download project.
+This directory contains all documentation for the jarkdown project.
 
 ## Structure
 

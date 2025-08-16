@@ -1,90 +1,79 @@
-# GEMINI.md
+# Project Overview
 
-## Project Overview
+This project is a command-line tool named "Jira Download" that exports Jira Cloud issues to Markdown files. It fetches issue data from the Jira Cloud REST API, downloads all attachments, and converts the issue description and comments from HTML to GitHub-flavored Markdown. The tool is written in Python and uses the `requests` library for API communication, `markdownify` for HTML to Markdown conversion, and `python-dotenv` for managing environment variables.
 
-This project is a command-line tool named "Jira Download" that exports Jira Cloud issues to Markdown files. The tool fetches issue data from the Jira Cloud REST API, downloads all attachments, converts the issue description and comments from HTML to GitHub-flavored Markdown. The goal is to create a local, offline copy of a Jira issue with all its content and attachments preserved.
+The main entry point for the application is `src/jira_download/jira_download.py`, which contains the command-line interface logic. The project is structured into several modules:
 
-The project is written in Python and uses the following main technologies:
+- `jira_api_client.py`: Handles all communication with the Jira Cloud REST API.
+- `attachment_handler.py`: Manages the downloading and saving of issue attachments.
+- `markdown_converter.py`: Converts Jira issue data into Markdown format.
+- `exceptions.py`: Defines custom exceptions for the application.
 
-*   **`requests`**: For making HTTP requests to the Jira Cloud REST API.
-*   **`markdownify`**: For converting HTML content to Markdown.
-*   **`python-dotenv`**: For managing environment variables for Jira credentials.
-*   **`pytest`**: For testing the application.
+# Building and Running
 
-The application's logic is encapsulated in the `export_issue` function, which coordinates between three main components: `JiraApiClient` for API communication, `AttachmentHandler` for downloading attachments, and `MarkdownConverter` for converting HTML to Markdown and handling comments. The command-line interface is handled in the `main` function, which uses `argparse` to parse command-line arguments.
-
-## Building and Running
-
-### Prerequisites
-
-*   Python 3.8+
-*   Jira Cloud instance
-*   Jira API token
-
-### Installation
+## Installation
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/chrisbyboston/jira-download.git
-    cd jira-download
+    git clone https://github.com/chrisbyboston/jarkdown.git
+    cd jarkdown
     ```
 
-2.  **Set up a virtual environment:**
+2.  **Create a virtual environment and install dependencies:**
     ```bash
     python3 -m venv venv
     source venv/bin/activate
+    pip install -e ".[dev]"
     ```
 
-3.  **Install dependencies:**
+3.  **Set up environment variables:**
+    Copy the `.env.example` file to `.env` and fill in your Jira credentials:
     ```bash
-    pip install .
+    cp .env.example .env
     ```
+    You will need to provide your `JIRA_DOMAIN`, `JIRA_EMAIL`, and `JIRA_API_TOKEN`.
 
-4.  **Set up environment variables:**
-    Create a `.env` file in the project root with your Jira credentials:
-    ```
-    JIRA_DOMAIN=your-company.atlassian.net
-    JIRA_EMAIL=your-email@company.com
-    JIRA_API_TOKEN=your-api-token
-    ```
+## Running the tool
 
-### Running the application
-
-The application can be run directly from the command line:
+To export a Jira issue, use the `jarkdown` command:
 
 ```bash
-./jira-download ISSUE-KEY
+jarkdown ISSUE-KEY
 ```
 
 For example:
 
 ```bash
-./jira-download PROJ-123
+jarkdown PROJ-123
 ```
 
 You can also specify an output directory:
 
 ```bash
-./jira-download PROJ-123 --output ~/Documents/jira-exports
+jarkdown PROJ-123 --output ~/Documents/jira-exports
 ```
 
-### Running tests
+## Running tests
 
-The project uses `pytest` for testing. To run the tests, first install the development dependencies:
-
-```bash
-pip install -e .[dev]
-```
-
-Then run the tests:
+The project uses `pytest` for testing. To run the test suite:
 
 ```bash
 pytest
 ```
 
-## Development Conventions
+To run tests with coverage:
 
-*   **Testing**: The project has a comprehensive test suite using `pytest`. Tests are located in the `tests` directory and are split into end-to-end CLI tests (`test_cli.py`) and component tests (`test_components.py`). The tests use mock data from the `tests/data` directory to simulate API responses.
-*   **Code Style**: The code follows standard Python conventions (PEP 8).
-*   **Dependencies**: Project dependencies are managed in `pyproject.toml`.
-*   **CI/CD**: The project has a CI workflow defined in `.github/workflows/ci.yml` that runs tests on every push and pull request.
+```bash
+pytest --cov=src/jira_download --cov-report=term-missing
+```
+
+# Development Conventions
+
+-   **Linting and Formatting:** The project uses `ruff` for linting and formatting.
+-   **Pre-commit Hooks:** Pre-commit hooks are used to ensure code quality before committing. To install the hooks, run:
+    ```bash
+    pre-commit install
+    ```
+-   **Testing:** All new functionality should be accompanied by tests. The tests are located in the `tests` directory.
+-   **Commit Messages:** Commit messages should be clear and descriptive.
+-   **Documentation:** The project's documentation is located in the `docs` directory and is built using Sphinx.

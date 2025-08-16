@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-This document outlines the technical design for extending the `jira-download` tool to support the fetching, conversion, and exporting of Jira issue comments. This feature was identified as a "Day 2 Requirement" in the original technical design and is the next logical step in creating a complete, offline archive of a Jira issue.
+This document outlines the technical design for extending the `jarkdown` tool to support the fetching, conversion, and exporting of Jira issue comments. This feature was identified as a "Day 2 Requirement" in the original technical design and is the next logical step in creating a complete, offline archive of a Jira issue.
 
 The goal is to append a formatted "Comments" section to the Markdown export, including the comment author, date, and the full body content, while ensuring any attachments referenced in comments are correctly linked.
 
@@ -99,9 +99,9 @@ A new set of tests will be added to ensure the comment exporting functionality i
     -   Add a test case, `test_issue_with_no_comments`, to ensure that if an issue has no comments, the "Comments" section is not added to the output.
 
 -   **CLI / End-to-End Tests (`test_cli.py`):**
-    -   Add a new E2E test, `test_successful_download_with_comments`, that runs the full `jira-download` command using the `issue_with_comments.json` mock data.
+    -   Add a new E2E test, `test_successful_download_with_comments`, that runs the full `jarkdown` command using the `issue_with_comments.json` mock data.
     -   This test will assert that the final generated `.md` file contains the correctly formatted "Comments" section.
 
 ## 5. Expected Outcome
 
-After implementing this design, the `jira-download` tool will be able to export a Jira issue's description, attachments, and all of its comments into a single, self-contained Markdown file, providing a more complete offline record of the issue.
+After implementing this design, the `jarkdown` tool will be able to export a Jira issue's description, attachments, and all of its comments into a single, self-contained Markdown file, providing a more complete offline record of the issue.

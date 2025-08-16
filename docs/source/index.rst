@@ -1,7 +1,7 @@
-jira-download Documentation
+jarkdown Documentation
 ============================
 
-**jira-download** is a powerful command-line tool that exports Jira issues to clean, readable Markdown files with all attachments preserved locally. Perfect for archiving, documentation, or offline access to your Jira content.
+**jarkdown** is a powerful command-line tool that exports Jira issues to clean, readable Markdown files with all attachments preserved locally. Perfect for archiving, documentation, or offline access to your Jira content.
 
 Key Features
 ------------
@@ -12,7 +12,7 @@ Key Features
 * **Local References**: Updates attachment links to point to downloaded files
 * **Simple CLI**: Easy-to-use command-line interface with clear options
 
-Why jira-download?
+Why jarkdown?
 ------------------
 
 Jira is excellent for issue tracking, but sometimes you need your data elsewhere:
@@ -29,13 +29,13 @@ Quick Start
 .. code-block:: bash
 
    # Install from PyPI (coming soon)
-   pip install jira-download
+   pip install jarkdown
 
    # Export a single issue
-   jira-download PROJ-123
+   jarkdown PROJ-123
 
    # Export with custom output location
-   jira-download PROJ-123 --output ~/Documents/jira-exports
+   jarkdown PROJ-123 --output ~/Documents/jira-exports
 
 Contents
 --------

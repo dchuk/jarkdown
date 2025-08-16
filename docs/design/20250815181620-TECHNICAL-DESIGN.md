@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document outlines the technical design for the next version of `jira-download`. It directly addresses the issues raised in the `CODEBASE_REVIEW.md` document and provides a clear path forward for improving the project's architecture, maintainability, and testing strategy.
+This document outlines the technical design for the next version of `jarkdown`. It directly addresses the issues raised in the `CODEBASE_REVIEW.md` document and provides a clear path forward for improving the project's architecture, maintainability, and testing strategy.
 
 ## 1. Dependency Management Strategy
 
@@ -13,7 +13,7 @@ This document outlines the technical design for the next version of `jira-downlo
 
 ## 2. Application Architecture Refactor
 
-The current monolithic `JiraDownloader` class will be decomposed into smaller, more focused components, each with a single responsibility.
+The current monolithic `Jarkdowner` class will be decomposed into smaller, more focused components, each with a single responsibility.
 
 ### Proposed Architecture
 
@@ -31,7 +31,7 @@ The application logic will be split across three new, distinct classes:
     - **Responsibility:** Converts the Jira issue data into a final Markdown file.
     - **Tasks:** Takes the raw issue data and the list of downloaded attachments, converts the description from HTML to Markdown, replaces attachment links, and composes the final `.md` file structure.
 
-The main `jira_download.py` script will be simplified to act as an orchestrator, coordinating the work between these components.
+The main `jarkdown.py` script will be simplified to act as an orchestrator, coordinating the work between these components.
 
 ## 3. Error Handling Framework
 

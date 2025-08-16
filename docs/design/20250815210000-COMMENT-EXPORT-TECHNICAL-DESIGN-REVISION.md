@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-This document revises the technical design for extending the `jira-download` tool to support Jira issue comments. This revision is based on feedback that the original design did not align with the desired Markdown formatting and made incorrect assumptions about the Jira API's comment data structure.
+This document revises the technical design for extending the `jarkdown` tool to support Jira issue comments. This revision is based on feedback that the original design did not align with the desired Markdown formatting and made incorrect assumptions about the Jira API's comment data structure.
 
 The goal remains to append a formatted "Comments" section to the Markdown export, including the comment author, date, and the full body content, while ensuring any attachments referenced in comments are correctly linked.
 
@@ -111,9 +111,9 @@ The testing strategy will be updated to reflect the revised implementation.
     -   Add a test case, `test_issue_with_no_comments`, to ensure that if an issue has no comments, the "Comments" section is not added.
 
 -   **CLI / End-to-End Tests (`test_cli.py`):**
-    -   Add a new E2E test, `test_successful_download_with_comments`, that runs the full `jira-download` command using the `issue_with_comments.json` mock data.
+    -   Add a new E2E test, `test_successful_download_with_comments`, that runs the full `jarkdown` command using the `issue_with_comments.json` mock data.
     -   This test will assert that the final generated `.md` file contains the correctly formatted "Comments" section.
 
 ## 6. Expected Outcome
 
-After implementing this revised design, the `jira-download` tool will correctly parse and export a Jira issue's description, attachments, and all of its comments into a single, well-formatted, and self-contained Markdown file.
+After implementing this revised design, the `jarkdown` tool will correctly parse and export a Jira issue's description, attachments, and all of its comments into a single, well-formatted, and self-contained Markdown file.

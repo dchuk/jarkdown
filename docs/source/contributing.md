@@ -29,8 +29,8 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 Unsure where to begin contributing? You can start by looking through these `beginner` and `help-wanted` issues:
 
-* [Beginner issues](https://github.com/chrisbyboston/jira-download/labels/beginner) - issues which should only require a few lines of code
-* [Help wanted issues](https://github.com/chrisbyboston/jira-download/labels/help%20wanted) - issues which need extra attention
+* [Beginner issues](https://github.com/chrisbyboston/jarkdown/labels/beginner) - issues which should only require a few lines of code
+* [Help wanted issues](https://github.com/chrisbyboston/jarkdown/labels/help%20wanted) - issues which need extra attention
 
 ## Development Setup
 
@@ -38,8 +38,8 @@ Unsure where to begin contributing? You can start by looking through these `begi
 
 2. **Clone your fork locally**:
    ```bash
-   git clone https://github.com/YOUR-USERNAME/jira-download.git
-   cd jira-download
+   git clone https://github.com/YOUR-USERNAME/jarkdown.git
+   cd jarkdown
    ```
 
 3. **Create a virtual environment**:
@@ -93,7 +93,7 @@ Before submitting a pull request, make sure all tests pass:
 pytest
 
 # Run with coverage report
-pytest --cov=jira_download --cov-report=term-missing
+pytest --cov=jarkdown --cov-report=term-missing
 
 # Run specific test file
 pytest tests/test_cli.py
@@ -151,16 +151,16 @@ We use Google-style docstrings:
 ```python
 def function_name(param1: str, param2: int) -> bool:
     """Brief description of function.
-    
+
     More detailed explanation if needed.
-    
+
     Args:
         param1: Description of first parameter.
         param2: Description of second parameter.
-        
+
     Returns:
         Description of return value.
-        
+
     Raises:
         ValueError: When invalid input provided.
     """
@@ -203,8 +203,8 @@ Closes #123
 Understanding the codebase:
 
 ```
-jira-download/
-├── jira_download.py        # Main CLI entry point
+jarkdown/
+├── jarkdown.py        # Main CLI entry point
 ├── jira_api_client.py      # Jira API interaction
 ├── attachment_handler.py   # Attachment downloading
 ├── markdown_converter.py   # HTML to Markdown conversion
@@ -234,10 +234,10 @@ def test_successful_issue_export(mock_api_client, tmp_path):
     """Test that export_issue successfully exports an issue."""
     # Arrange
     mock_api_client.get_issue.return_value = {"key": "TEST-1"}
-    
+
     # Act
     result = export_issue("TEST-1", str(tmp_path))
-    
+
     # Assert
     assert result == 0
     assert (tmp_path / "TEST-1" / "TEST-1.md").exists()

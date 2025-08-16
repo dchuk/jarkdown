@@ -5,10 +5,10 @@ from unittest.mock import Mock
 import pytest
 import requests
 
-from jira_download.jira_api_client import JiraApiClient
-from jira_download.attachment_handler import AttachmentHandler
-from jira_download.markdown_converter import MarkdownConverter
-from jira_download.exceptions import (
+from jarkdown.jira_api_client import JiraApiClient
+from jarkdown.attachment_handler import AttachmentHandler
+from jarkdown.markdown_converter import MarkdownConverter
+from jarkdown.exceptions import (
     JiraApiError,
     AuthenticationError,
     IssueNotFoundError,

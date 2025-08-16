@@ -8,7 +8,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.abspath("../.."))
 
 # Project information
-project = "jira-download"
+project = "jarkdown"
 copyright = f"{datetime.now().year}, Chris Reynolds"
 author = "Chris Reynolds"
 release = "1.0.0"
@@ -50,7 +50,7 @@ myst_enable_extensions = [
 # HTML output options using Furo theme
 html_theme = "furo"
 html_static_path = ["_static"]
-html_title = "jira-download Documentation"
+html_title = "jarkdown Documentation"
 
 # Theme options
 html_theme_options = {

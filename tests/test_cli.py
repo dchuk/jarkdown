@@ -5,7 +5,7 @@ from io import StringIO
 import pytest
 import requests
 
-from jira_download.jira_download import main
+from jarkdown.jarkdown import main
 
 
 @pytest.fixture
@@ -162,9 +162,9 @@ class TestCLI:
 
         with patch.dict(os.environ, clean_env, clear=True):
             with patch(
-                "jira_download.jira_download.load_dotenv"
+                "jarkdown.jarkdown.load_dotenv"
             ):  # Mock load_dotenv to prevent loading any .env files
-                with patch("sys.argv", ["jira-download", "TEST-123"]):
+                with patch("sys.argv", ["jarkdown", "TEST-123"]):
                     # Capture stderr
                     with patch("sys.stderr", new=StringIO()) as mock_stderr:
                         with pytest.raises(SystemExit) as exc_info:

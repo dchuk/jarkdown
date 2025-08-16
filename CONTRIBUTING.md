@@ -29,8 +29,8 @@ Enhancement suggestions are tracked as GitHub issues. When creating an enhanceme
 
 Unsure where to begin contributing? You can start by looking through these `beginner` and `help-wanted` issues:
 
-* [Beginner issues](https://github.com/chrisbyboston/jira-download/labels/beginner) - issues which should only require a few lines of code
-* [Help wanted issues](https://github.com/chrisbyboston/jira-download/labels/help%20wanted) - issues which need extra attention
+* [Beginner issues](https://github.com/chrisbyboston/jarkdown/labels/beginner) - issues which should only require a few lines of code
+* [Help wanted issues](https://github.com/chrisbyboston/jarkdown/labels/help%20wanted) - issues which need extra attention
 
 ## Development Setup
 
@@ -38,8 +38,8 @@ Unsure where to begin contributing? You can start by looking through these `begi
 
 2. **Clone your fork locally**:
    ```bash
-   git clone https://github.com/YOUR-USERNAME/jira-download.git
-   cd jira-download
+   git clone https://github.com/YOUR-USERNAME/jarkdown.git
+   cd jarkdown
    ```
 
 3. **Create a virtual environment**:
