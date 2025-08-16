@@ -205,23 +205,23 @@ Environment variables:
     # Load environment variables
     load_dotenv()
 
-    # Check if .env file exists
-    env_path = Path.cwd() / ".env"
-    if not env_path.exists():
-        print("Error: Configuration file '.env' not found.")
-        print("\nTo set up your configuration, run: jarkdown --setup")
-        print("Or create a .env file manually with:")
-        print("  JIRA_DOMAIN=your-company.atlassian.net")
-        print("  JIRA_EMAIL=your-email@example.com")
-        print("  JIRA_API_TOKEN=your-api-token")
-        sys.exit(1)
-
     # Export the issue
     try:
         # Get credentials from environment
         domain = os.getenv("JIRA_DOMAIN")
         email = os.getenv("JIRA_EMAIL")
         api_token = os.getenv("JIRA_API_TOKEN")
+
+        # Check if .env file exists and no environment variables are set
+        env_path = Path.cwd() / ".env"
+        if not env_path.exists() and not all([domain, email, api_token]):
+            print("Error: Configuration file '.env' not found.")
+            print("\nTo set up your configuration, run: jarkdown --setup")
+            print("Or create a .env file manually with:")
+            print("  JIRA_DOMAIN=your-company.atlassian.net")
+            print("  JIRA_EMAIL=your-email@example.com")
+            print("  JIRA_API_TOKEN=your-api-token")
+            sys.exit(1)
 
         # Validate credentials with helpful error messages
         missing = []
