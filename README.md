@@ -22,7 +22,8 @@ Full documentation is available at [jarkdown.readthedocs.io](https://jarkdown.re
 
 ## Key Features
 
-- **Complete Export:** Fetches issue descriptions, metadata, and downloads all attachments locally.
+- **Complete Export:** Fetches all issue metadata, descriptions, comments, and downloads all attachments locally.
+- **Rich Metadata:** Exports comprehensive metadata in YAML frontmatter including labels, components, versions, parent issues, and more.
 - **Preserves Formatting:** Converts Jira's HTML to GitHub-flavored Markdown, keeping headings, lists, code blocks, and tables intact.
 - **Embeds Local Links:** Automatically references downloaded attachments with local links in the Markdown file.
 - **Simple and Fast:** A command-line tool that is easy to script and integrate into your workflow.
@@ -127,9 +128,33 @@ PROJ-123/
 ## Markdown Format
 
 The generated markdown includes:
+
+### YAML Frontmatter with Complete Metadata
+```yaml
+---
+key: PROJ-123
+summary: Issue title
+type: Bug
+status: In Progress
+priority: High
+assignee: John Doe
+reporter: Jane Smith
+labels:
+  - backend
+  - performance
+components:
+  - API
+  - Database
+parent_key: PROJ-100
+created_at: 2025-01-15T10:30:00.000+0000
+updated_at: 2025-01-20T14:45:00.000+0000
+---
+```
+
+### Markdown Content
 - Issue title with link to Jira
-- Metadata (Type, Status, Priority, Assignee, Reporter)
 - Description with preserved formatting
+- Comments with author and timestamp
 - Attachments section with all files
 
 Images are embedded inline, other files are linked.
@@ -145,20 +170,20 @@ Images are embedded inline, other files are linked.
 - `requests` - HTTP client for API calls
 - `markdownify` - HTML to Markdown conversion
 - `python-dotenv` - Environment variable management
+- `PyYAML` - YAML frontmatter generation
 
 ## Limitations
 
 - Currently supports single issue export only
-- Comments are not included (planned for future)
 - Requires Jira Cloud (not Server/Data Center)
 
 ## Future Enhancements
 
 - Export multiple issues with JQL queries
-- Include issue comments
 - Support for bulk export
 - Hierarchical export (epics with stories)
 - Better ADF format handling
+- Custom field support
 
 ## Contributing
 

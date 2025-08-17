@@ -1,6 +1,7 @@
 """Tests for the refactored component classes."""
 
 import json
+import yaml
 from unittest.mock import Mock
 import pytest
 import requests
@@ -94,7 +95,7 @@ class TestJiraApiClient:
         api_client.session.get.assert_called_once_with(
             "https://example.atlassian.net/rest/api/3/issue/TEST-123",
             params={
-                "fields": "summary,description,issuetype,status,priority,attachment,assignee,reporter,created,updated,comment",
+                "fields": "*all",
                 "expand": "renderedFields",
             },
         )
@@ -413,7 +414,7 @@ class TestMarkdownConverter:
     def test_complete_markdown_structure(
         self, markdown_converter, issue_with_attachments
     ):
-        """Test complete markdown generation"""
+        """Test complete markdown generation with YAML frontmatter"""
         attachments = [
             {
                 "filename": "screenshot.png",
@@ -431,16 +432,38 @@ class TestMarkdownConverter:
             issue_with_attachments, attachments
         )
 
-        # Check structure
+        # Check YAML frontmatter
+        assert result.startswith("---\n")
+        assert "---" in result[4:]  # Second separator
+
+        # Extract and parse YAML frontmatter
+        yaml_end = result.index("---", 4) + 3
+        yaml_content = result[4 : yaml_end - 3]
+        metadata = yaml.safe_load(yaml_content)
+
+        # Check metadata fields
+        assert metadata["key"] == "TEST-123"
+        assert metadata["summary"] == "Test Issue with Attachments"
+        assert metadata["type"] == "Task"
+        assert metadata["status"] == "To Do"
+        assert metadata["priority"] == "Medium"
+        assert metadata["assignee"] == "John Doe"
+        assert metadata["reporter"] == "Jane Smith"
+        assert metadata["creator"] == "Jane Smith"
+        assert metadata["labels"] == ["backend", "performance"]
+        assert metadata["components"] == ["API", "Database"]
+        assert metadata["parent_key"] == "TEST-100"
+        assert metadata["parent_summary"] == "Epic for Q3 Features"
+        assert metadata["affects_versions"] == ["v1.1"]
+        assert metadata["fix_versions"] == ["v1.2"]
+        assert metadata["created_at"] == "2025-01-15T10:30:00.000+0000"
+        assert metadata["updated_at"] == "2025-01-20T14:45:00.000+0000"
+
+        # Check markdown content after frontmatter
         assert (
             "# [TEST-123](https://example.atlassian.net/browse/TEST-123): Test Issue with Attachments"
             in result
         )
-        assert "**Type:** Task" in result
-        assert "**Status:** To Do" in result
-        assert "**Priority:** Medium" in result
-        assert "**Assignee:** John Doe" in result
-        assert "**Reporter:** Jane Smith" in result
         assert "## Description" in result
         assert "## Attachments" in result
 
@@ -455,9 +478,24 @@ class TestMarkdownConverter:
         assert "*No description provided*" in result
 
     def test_issue_no_attachments(self, markdown_converter, issue_no_attachments):
-        """Test issue without attachments omits attachments section"""
+        """Test issue without attachments omits attachments section but has YAML frontmatter"""
         result = markdown_converter.compose_markdown(issue_no_attachments, [])
 
+        # Check YAML frontmatter exists
+        assert result.startswith("---\n")
+
+        # Extract and parse YAML frontmatter
+        yaml_end = result.index("---", 4) + 3
+        yaml_content = result[4 : yaml_end - 3]
+        metadata = yaml.safe_load(yaml_content)
+
+        # Check some metadata fields from issue_no_attachments
+        assert metadata["key"] == "TEST-789"
+        assert metadata["status"] == "Done"
+        assert metadata["resolution"] == "Fixed"
+        assert metadata["resolved_at"] == "2025-03-15T16:00:00.000+0000"
+
+        # Check no attachments section
         assert "## Attachments" not in result
 
     def test_attachments_section_formatting(self, markdown_converter):
@@ -468,6 +506,9 @@ class TestMarkdownConverter:
                 "summary": "Test",
                 "issuetype": {"name": "Task"},
                 "status": {"name": "Open"},
+                "reporter": {"displayName": "Test User"},
+                "created": "2025-01-01T00:00:00.000+0000",
+                "updated": "2025-01-01T00:00:00.000+0000",
             },
             "renderedFields": {},
         }
@@ -565,6 +606,9 @@ class TestMarkdownConverter:
                 "summary": "Issue without comments",
                 "issuetype": {"name": "Task"},
                 "status": {"name": "Open"},
+                "reporter": {"displayName": "Test User"},
+                "created": "2025-01-01T00:00:00.000+0000",
+                "updated": "2025-01-01T00:00:00.000+0000",
                 "comment": {"comments": [], "total": 0},
             },
             "renderedFields": {"description": "<p>Test description</p>"},
@@ -585,6 +629,9 @@ class TestMarkdownConverter:
                 "summary": "Test",
                 "issuetype": {"name": "Task"},
                 "status": {"name": "Open"},
+                "reporter": {"displayName": "Test User"},
+                "created": "2025-01-01T00:00:00.000+0000",
+                "updated": "2025-01-01T00:00:00.000+0000",
                 "comment": {
                     "comments": [
                         {
@@ -613,6 +660,9 @@ class TestMarkdownConverter:
                 "summary": "Test ADF Comments",
                 "issuetype": {"name": "Task"},
                 "status": {"name": "Open"},
+                "reporter": {"displayName": "Test User"},
+                "created": "2025-01-01T00:00:00.000+0000",
+                "updated": "2025-01-01T00:00:00.000+0000",
                 "comment": {
                     "comments": [
                         {

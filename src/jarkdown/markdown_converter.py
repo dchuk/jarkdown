@@ -1,6 +1,7 @@
 """Converter for transforming Jira issues to Markdown format."""
 
 import re
+import yaml
 from urllib.parse import quote
 from markdownify import markdownify as md
 
@@ -334,6 +335,85 @@ class MarkdownConverter:
 
         return lines
 
+    def _generate_metadata_dict(self, issue_data):
+        """Generate metadata dictionary from Jira issue data.
+
+        Args:
+            issue_data: Raw issue data from Jira API
+
+        Returns:
+            dict: Metadata dictionary for YAML frontmatter
+        """
+        fields = issue_data.get("fields", {})
+        metadata = {}
+
+        # Required fields
+        metadata["key"] = issue_data.get("key", "UNKNOWN")
+        metadata["summary"] = fields.get("summary", "No Summary")
+
+        # Type and status
+        if fields.get("issuetype"):
+            metadata["type"] = fields["issuetype"].get("name")
+        if fields.get("status"):
+            metadata["status"] = fields["status"].get("name")
+
+        # Priority
+        if fields.get("priority"):
+            metadata["priority"] = fields["priority"].get("name")
+
+        # Resolution
+        if fields.get("resolution"):
+            metadata["resolution"] = fields["resolution"].get("name")
+
+        # People
+        if fields.get("assignee"):
+            metadata["assignee"] = fields["assignee"].get("displayName")
+        if fields.get("reporter"):
+            metadata["reporter"] = fields["reporter"].get("displayName")
+        if fields.get("creator"):
+            metadata["creator"] = fields["creator"].get("displayName")
+
+        # Labels
+        if fields.get("labels"):
+            metadata["labels"] = fields["labels"]
+
+        # Components
+        if fields.get("components"):
+            metadata["components"] = [
+                comp.get("name") for comp in fields["components"] if comp.get("name")
+            ]
+
+        # Parent issue (for sub-tasks)
+        if fields.get("parent"):
+            metadata["parent_key"] = fields["parent"].get("key")
+            if fields["parent"].get("fields", {}).get("summary"):
+                metadata["parent_summary"] = fields["parent"]["fields"]["summary"]
+
+        # Versions
+        if fields.get("versions"):
+            metadata["affects_versions"] = [
+                ver.get("name") for ver in fields["versions"] if ver.get("name")
+            ]
+        if fields.get("fixVersions"):
+            metadata["fix_versions"] = [
+                ver.get("name") for ver in fields["fixVersions"] if ver.get("name")
+            ]
+
+        # Dates
+        if fields.get("created"):
+            metadata["created_at"] = fields["created"]
+        if fields.get("updated"):
+            metadata["updated_at"] = fields["updated"]
+        if fields.get("resolutiondate"):
+            metadata["resolved_at"] = fields["resolutiondate"]
+
+        # Remove None values and empty lists
+        return {
+            k: v
+            for k, v in metadata.items()
+            if v is not None and (not isinstance(v, list) or v)
+        }
+
     def compose_markdown(self, issue_data, downloaded_attachments):
         """Compose the final markdown file content.
 
@@ -347,40 +427,27 @@ class MarkdownConverter:
         fields = issue_data.get("fields", {})
         rendered_fields = issue_data.get("renderedFields", {})
 
-        # Extract metadata
-        key = issue_data.get("key", "UNKNOWN")
-        summary = fields.get("summary", "No Summary")
-        issue_type = fields.get("issuetype", {}).get("name", "Unknown")
-        status = fields.get("status", {}).get("name", "Unknown")
-        priority = (
-            fields.get("priority", {}).get("name", "Normal")
-            if fields.get("priority")
-            else "Normal"
-        )
-        assignee = (
-            fields.get("assignee", {}).get("displayName", "Unassigned")
-            if fields.get("assignee")
-            else "Unassigned"
-        )
-        reporter = (
-            fields.get("reporter", {}).get("displayName", "Unknown")
-            if fields.get("reporter")
-            else "Unknown"
-        )
+        # Generate metadata dictionary
+        metadata = self._generate_metadata_dict(issue_data)
+
+        # Extract key and summary for the title
+        key = metadata.get("key", "UNKNOWN")
+        summary = metadata.get("summary", "No Summary")
 
         # Start composing markdown
         lines = []
 
-        # Title with link to Jira issue
-        lines.append(f"# [{key}]({self.base_url}/browse/{key}): {summary}")
+        # YAML frontmatter
+        yaml_content = yaml.dump(
+            metadata, default_flow_style=False, allow_unicode=True, sort_keys=False
+        )
+        lines.append("---")
+        lines.append(yaml_content.rstrip())
+        lines.append("---")
         lines.append("")
 
-        # Metadata section
-        lines.append(f"**Type:** {issue_type}  ")
-        lines.append(f"**Status:** {status}  ")
-        lines.append(f"**Priority:** {priority}  ")
-        lines.append(f"**Assignee:** {assignee}  ")
-        lines.append(f"**Reporter:** {reporter}")
+        # Title with link to Jira issue
+        lines.append(f"# [{key}]({self.base_url}/browse/{key}): {summary}")
         lines.append("")
 
         # Description section

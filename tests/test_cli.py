@@ -124,12 +124,17 @@ class TestCLI:
                     with open("TEST-123/TEST-123.md", "r") as f:
                         content = f.read()
 
+                    # Check YAML frontmatter exists
+                    assert content.startswith("---\n")
+                    assert "key: TEST-123" in content
+                    assert "type: Task" in content
+                    assert "status: To Do" in content
+
+                    # Check markdown content
                     assert (
                         "# [TEST-123](https://example.atlassian.net/browse/TEST-123): Test Issue with Attachments"
                         in content
                     )
-                    assert "**Type:** Task" in content
-                    assert "**Status:** To Do" in content
                     assert "## Description" in content
                     assert "## Attachments" in content
 
