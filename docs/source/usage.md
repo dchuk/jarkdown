@@ -76,36 +76,51 @@ PROJ-123/
 
 The generated Markdown file includes:
 
-1. **Header metadata** - Issue key, type, status, priority
-2. **Issue details** - Reporter, assignee, dates
-3. **Description** - Main issue content converted from Jira's HTML
-4. **Comments** - All comments with author and timestamp
-5. **Attachment links** - Updated to reference local files
+1.  **YAML Frontmatter** - A block at the top of the file containing comprehensive metadata like status, priority, labels, components, parent issues, and more.
+2.  **Title** - The issue key and summary, linked to the original Jira issue.
+3.  **Description** - The main issue content, converted from Jira's HTML to Markdown.
+4.  **Comments** - All comments with author and timestamp.
+5.  **Attachments Section** - A list of links to all downloaded attachments.
 
 Example structure:
 
 ```markdown
-# PROJ-123: Implement user authentication
+---
+key: PROJ-123
+summary: Implement user authentication
+type: Story
+status: In Progress
+priority: High
+assignee: John Smith
+reporter: Jane Doe
+labels:
+  - auth
+  - frontend
+components:
+  - Web App
+created_at: '2024-01-15T10:30:00.000+0000'
+updated_at: '2024-01-20T15:45:00.000+0000'
+---
 
-**Type:** Story
-**Status:** In Progress
-**Priority:** High
-
-## Details
-- **Reporter:** Jane Doe
-- **Assignee:** John Smith
-- **Created:** 2024-01-15 10:30:00
-- **Updated:** 2024-01-20 15:45:00
+# [PROJ-123](https://your-domain.atlassian.net/browse/PROJ-123): Implement user authentication
 
 ## Description
+
 As a user, I want to be able to log in...
 
 ![Screenshot](screenshot.png)
 
 ## Comments
 
-### Jane Doe - 2024-01-16 09:00:00
+**Jane Doe** - _2024-01-16 09:00 AM_
+
 Here's the updated design: [design-doc.pdf](design-doc.pdf)
+
+---
+
+**John Smith** - _2024-01-17 02:30 PM_
+
+Implementation is underway.
 ```
 
 ## Common Use Cases

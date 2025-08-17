@@ -24,6 +24,7 @@ Full documentation is available at [jarkdown.readthedocs.io](https://jarkdown.re
 
 - **Complete Export:** Fetches all issue metadata, descriptions, comments, and downloads all attachments locally.
 - **Rich Metadata:** Exports comprehensive metadata in YAML frontmatter including labels, components, versions, parent issues, and more.
+- **Comment Support:** Exports all issue comments with author, date, and formatted content, including support for Atlassian Document Format (ADF).
 - **Preserves Formatting:** Converts Jira's HTML to GitHub-flavored Markdown, keeping headings, lists, code blocks, and tables intact.
 - **Embeds Local Links:** Automatically references downloaded attachments with local links in the Markdown file.
 - **Simple and Fast:** A command-line tool that is easy to script and integrate into your workflow.
@@ -154,7 +155,7 @@ updated_at: 2025-01-20T14:45:00.000+0000
 ### Markdown Content
 - Issue title with link to Jira
 - Description with preserved formatting
-- Comments with author and timestamp
+- Comments section with all comments (author, date, and content)
 - Attachments section with all files
 
 Images are embedded inline, other files are linked.

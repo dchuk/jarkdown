@@ -96,10 +96,10 @@ Converts Jira HTML content to clean Markdown.
 - Structure the final document
 
 **Key Methods:**
-- `convert_issue()` - Main conversion method
-- `_update_attachment_urls()` - Replace Jira URLs with local paths
-- `_format_comments()` - Convert and format comments
-- `_create_metadata_section()` - Generate issue header
+- `compose_markdown()` - Main conversion method
+- `replace_attachment_links()` - Replace Jira URLs with local paths
+- `_compose_comments_section()` - Convert and format comments with ADF support
+- `_generate_metadata_dict()` - Generate YAML frontmatter metadata
 
 **Design Decisions:**
 - Uses markdownify for robust HTML conversion

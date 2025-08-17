@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Enhanced Metadata Export:** All available issue metadata is now exported into a YAML frontmatter block at the top of the Markdown file. This includes labels, components, versions, parent issue links, resolution status, and all relevant dates.
+- **Comment Export:** The tool now fetches and exports all issue comments, including the author, timestamp, and full body content.
+
+### Changed
+- The `fields` parameter in the Jira API call was changed from a predefined list to `*all` to fetch complete issue data.
+- The Markdown output format was changed from simple key-value pairs to a structured YAML frontmatter block for metadata.
+
+### Dependencies
+- Added `PyYAML` for reliable YAML serialization.
+
 ## [0.1.0] - 2025-08-16
 
 ### Added
@@ -35,7 +46,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Known Limitations
 - Single issue export only (bulk export planned)
-- Comments not included (planned for v0.2.0)
 - Jira Cloud only (Server/Data Center support planned)
 
 [Unreleased]: https://github.com/chrisbyboston/jarkdown/compare/v0.1.0...HEAD
