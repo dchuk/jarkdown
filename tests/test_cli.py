@@ -46,6 +46,13 @@ def issue_with_comments():
         return json.load(f)
 
 
+@pytest.fixture
+def issue_with_adf_media():
+    """Load mock issue whose comments contain ADF media attachments"""
+    with open("tests/data/issue_with_adf_media.json") as f:
+        return json.load(f)
+
+
 class TestCLI:
     """End-to-end tests for the CLI interface"""
 
@@ -352,5 +359,46 @@ class TestCLI:
                         "[TEST-456](https://example.atlassian.net/browse/TEST-456)", ""
                     )
                     assert "/attachment/content/" not in content
+                finally:
+                    os.chdir(original_cwd)
+
+    def test_adf_comment_media_embeds_attachments(
+        self, mock_env, issue_with_adf_media, tmp_path, mocker
+    ):
+        """ADF-only comments should embed downloaded attachments instead of placeholder text."""
+        mock_session = Mock()
+        issue_response = Mock()
+        issue_response.raise_for_status = Mock()
+        issue_response.json.return_value = issue_with_adf_media
+
+        attachment_response = Mock()
+        attachment_response.raise_for_status = Mock()
+        attachment_response.iter_content = Mock(return_value=[b"binary data"])
+
+        # First call fetches the issue, subsequent call downloads the attachment
+        mock_session.get = Mock(side_effect=[issue_response, attachment_response])
+
+        with patch("requests.Session", return_value=mock_session):
+            with patch.dict(os.environ, mock_env):
+                original_cwd = os.getcwd()
+                os.chdir(tmp_path)
+
+                with open(".env", "w") as f:
+                    f.write("")
+
+                try:
+                    with patch(
+                        "sys.argv", ["jarkdown", "ADF-100", "--output", str(tmp_path)]
+                    ):
+                        main()
+
+                    output_dir = tmp_path / "ADF-100"
+                    md_file = output_dir / "ADF-100.md"
+                    assert md_file.exists()
+                    content = md_file.read_text()
+
+                    # Expected behavior: inline media uses downloaded filename
+                    assert "![evidence.png](evidence.png)" in content
+                    assert "![attachment](attachment)" not in content
                 finally:
                     os.chdir(original_cwd)
