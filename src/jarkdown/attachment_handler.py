@@ -59,6 +59,7 @@ class AttachmentHandler:
                         f.write(chunk)
 
             return {
+                "attachment_id": attachment.get("id"),
                 "filename": file_path.name,
                 "original_filename": filename,
                 "mime_type": mime_type,

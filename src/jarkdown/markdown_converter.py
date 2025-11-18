@@ -18,6 +18,83 @@ class MarkdownConverter:
         """
         self.base_url = base_url
         self.domain = domain
+        self._downloaded_attachments = []
+        self._attachments_by_id = {}
+        self._attachments_by_name = {}
+
+    def _prepare_attachment_lookup(self, downloaded_attachments):
+        """Create lookup dictionaries for downloaded attachments."""
+        self._downloaded_attachments = downloaded_attachments or []
+        self._attachments_by_id = {}
+        self._attachments_by_name = {}
+
+        for attachment in self._downloaded_attachments:
+            if not attachment:
+                continue
+
+            attachment_id = attachment.get("attachment_id")
+            if attachment_id is not None:
+                self._attachments_by_id[str(attachment_id)] = attachment
+
+            for name in filter(
+                None,
+                [
+                    attachment.get("original_filename"),
+                    attachment.get("filename"),
+                ],
+            ):
+                self._attachments_by_name[name.lower()] = attachment
+
+    def _get_attachment_for_media(self, attachment_id=None, filename_hint=None):
+        """Find a downloaded attachment by id or filename hint."""
+        if attachment_id is not None:
+            attachment = self._attachments_by_id.get(str(attachment_id))
+            if attachment:
+                return attachment
+
+        if filename_hint:
+            normalized = filename_hint.strip().lower()
+            attachment = self._attachments_by_name.get(normalized)
+            if attachment:
+                return attachment
+
+        return None
+
+    def _media_attrs_to_markdown(self, attrs):
+        """Convert ADF media attributes to Markdown image syntax."""
+        if not isinstance(attrs, dict):
+            return "![attachment](attachment)"
+
+        media_type = attrs.get("type", "file")
+        filename_hint = (
+            attrs.get("alt") or attrs.get("title") or attrs.get("fileName") or ""
+        )
+
+        if media_type == "external":
+            url = attrs.get("url")
+            if url:
+                alt_text = filename_hint or url
+                return f"![{alt_text}]({url})"
+
+        attachment = self._get_attachment_for_media(
+            attachment_id=attrs.get("id"),
+            filename_hint=filename_hint,
+        )
+
+        if attachment:
+            local_name = attachment.get("filename")
+            encoded_filename = quote(local_name, safe="") if local_name else ""
+            alt_text = (
+                filename_hint
+                or attachment.get("original_filename")
+                or local_name
+                or "attachment"
+            )
+            if encoded_filename:
+                return f"![{alt_text}]({encoded_filename})"
+
+        alt_text = filename_hint or "attachment"
+        return f"![{alt_text}](attachment)"
 
     def convert_html_to_markdown(self, html_content):
         """Convert HTML content to Markdown.
@@ -226,13 +303,22 @@ class MarkdownConverter:
             # Add > prefix to each line
             return "\n".join(f"> {line}" for line in quote_text.split("\n"))
 
-        elif doc_type == "mediaSingle" or doc_type == "media":
-            # Media/attachment
+        elif doc_type == "mediaSingle":
+            # Media container - render contained media nodes
+            content = adf_content.get("content", [])
+            rendered = [self._parse_adf_to_markdown(node) for node in content if node]
+            combined = "\n".join(filter(None, rendered))
+            if combined:
+                return combined
+
+            # Fall back to attributes if there is no nested media node
             attrs = adf_content.get("attrs", {})
-            # Try to get filename or alt text
-            filename = attrs.get("alt", "") or attrs.get("title", "") or "attachment"
-            # For now, just create a placeholder that will be replaced later
-            return f"![{filename}](attachment)"
+            return self._media_attrs_to_markdown(attrs)
+
+        elif doc_type == "media":
+            # Concrete media node
+            attrs = adf_content.get("attrs", {})
+            return self._media_attrs_to_markdown(attrs)
 
         elif doc_type == "mention":
             # User mention
@@ -426,6 +512,9 @@ class MarkdownConverter:
         """
         fields = issue_data.get("fields", {})
         rendered_fields = issue_data.get("renderedFields", {})
+
+        # Allow ADF parsing to resolve downloaded attachments
+        self._prepare_attachment_lookup(downloaded_attachments)
 
         # Generate metadata dictionary
         metadata = self._generate_metadata_dict(issue_data)
