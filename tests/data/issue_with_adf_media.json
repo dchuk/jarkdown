@@ -1,0 +1,66 @@
+{
+  "key": "ADF-100",
+  "fields": {
+    "summary": "Issue with ADF media comment",
+    "issuetype": { "name": "Bug" },
+    "status": { "name": "To Do" },
+    "priority": { "name": "Medium" },
+    "assignee": { "displayName": "ADF User" },
+    "reporter": { "displayName": "Reporter" },
+    "creator": { "displayName": "Reporter" },
+    "labels": ["adf", "media"],
+    "attachment": [
+      {
+        "id": "60001",
+        "filename": "evidence.png",
+        "size": 12345,
+        "mimeType": "image/png",
+        "content": "https://example.atlassian.net/secure/attachment/60001/evidence.png"
+      }
+    ],
+    "comment": {
+      "comments": [
+        {
+          "id": "90001",
+          "author": { "displayName": "ADF Author" },
+          "created": "2025-08-16T10:30:00.000+0000",
+          "body": {
+            "type": "doc",
+            "version": 1,
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  { "type": "text", "text": "ADF media evidence:" }
+                ]
+              },
+              {
+                "type": "mediaSingle",
+                "attrs": { "layout": "center" },
+                "content": [
+                  {
+                    "type": "media",
+                    "attrs": {
+                      "type": "file",
+                      "id": "abc123",
+                      "collection": "jira-attachments",
+                      "alt": "evidence.png",
+                      "title": "evidence.png"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "maxResults": 1,
+      "total": 1,
+      "startAt": 0
+    },
+    "description": "<p>ADF description body</p>"
+  },
+  "renderedFields": {
+    "description": "<p>ADF description body</p>"
+  }
+}
