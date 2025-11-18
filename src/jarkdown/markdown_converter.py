@@ -108,6 +108,20 @@ class MarkdownConverter:
         if not html_content:
             return ""
 
+        # Remove Atlassian-specific wrappers around images to keep plain Markdown embeds
+        html_content = re.sub(
+            r"<jira-attachment-thumbnail[^>]*>(.*?)</jira-attachment-thumbnail>",
+            r"\1",
+            html_content,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        html_content = re.sub(
+            r"<a\b[^>]*>\s*(<img\b[^>]*>)\s*</a>",
+            r"\1",
+            html_content,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+
         # Convert HTML to Markdown using markdownify
         markdown = md(html_content, heading_style="ATX", bullets="*-+")
 
@@ -134,6 +148,9 @@ class MarkdownConverter:
 
         # Escape special regex characters in domain
         escaped_domain = re.escape(self.domain)
+        optional_domain = f"(?:https?://{escaped_domain})?"
+        rest_prefix = f"{optional_domain}/(?:jira/)?rest/api/[0-9]+/attachment"
+        secure_prefix = f"{optional_domain}/secure/attachment"
 
         # For secure attachment URLs with filename in path
         for attachment in downloaded_attachments:
@@ -150,8 +167,8 @@ class MarkdownConverter:
                 encoded_original = re.escape(quote(original_filename, safe=""))
                 # Pattern for secure URLs with this specific filename (regular or URL-encoded)
                 patterns_to_try = [
-                    f"https?://{escaped_domain}/secure/attachment/[0-9]+/{escaped_original}",
-                    f"https?://{escaped_domain}/secure/attachment/[0-9]+/{encoded_original}",
+                    f"{secure_prefix}/[0-9]+/{escaped_original}",
+                    f"{secure_prefix}/[0-9]+/{encoded_original}",
                 ]
 
                 for pattern in patterns_to_try:
@@ -167,14 +184,28 @@ class MarkdownConverter:
                         f"\\1({encoded_filename})",
                         markdown_content,
                     )
+            attachment_id = attachment.get("attachment_id")
+            if attachment_id:
+                escaped_id = re.escape(str(attachment_id))
+                id_pattern = f"{rest_prefix}/(?:content|thumbnail)/{escaped_id}"
+                markdown_content = re.sub(
+                    f"(!\\[[^\\]]*\\])\\({id_pattern}\\)",
+                    f"\\1({encoded_filename})",
+                    markdown_content,
+                )
+                markdown_content = re.sub(
+                    f"(\\[[^\\]]+\\])\\({id_pattern}\\)",
+                    f"\\1({encoded_filename})",
+                    markdown_content,
+                )
 
         # For generic attachment content URLs (without filename in path)
         # Replace all remaining Jira attachment URLs with placeholder
         # This is a fallback for URLs that don't have the filename in them
         patterns = [
-            f"https?://{escaped_domain}/jira/rest/api/[0-9]/attachment/content/[0-9]+",
-            f"https?://{escaped_domain}/rest/api/[0-9]/attachment/content/[0-9]+",
-            f"https?://{escaped_domain}/jira/rest/api/[0-9]/attachment/thumbnail/[0-9]+",
+            f"{optional_domain}/jira/rest/api/[0-9]+/attachment/content/[0-9]+",
+            f"{optional_domain}/rest/api/[0-9]+/attachment/content/[0-9]+",
+            f"{optional_domain}/jira/rest/api/[0-9]+/attachment/thumbnail/[0-9]+",
         ]
 
         for pattern in patterns:
@@ -349,6 +380,12 @@ class MarkdownConverter:
         fields = issue_data.get("fields", {})
         comment_data = fields.get("comment", {})
         comments = comment_data.get("comments", [])
+        rendered_comment_lookup = {}
+        rendered_comments = (
+            issue_data.get("renderedFields", {}).get("comment", {}).get("comments", [])
+        )
+        for rendered in rendered_comments:
+            rendered_comment_lookup[rendered.get("id")] = rendered
 
         if not comments:
             return []
@@ -389,6 +426,10 @@ class MarkdownConverter:
             # Process the comment body
             # Check if we have rendered HTML first
             body_html = comment.get("renderedBody", "")
+            if not body_html:
+                rendered_comment = rendered_comment_lookup.get(comment.get("id"))
+                if rendered_comment:
+                    body_html = rendered_comment.get("body", "")
 
             if body_html:
                 # Use rendered HTML if available
