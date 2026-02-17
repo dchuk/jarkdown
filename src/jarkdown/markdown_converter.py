@@ -229,6 +229,51 @@ class MarkdownConverter:
 
         return markdown_content
 
+    def _compose_linked_issues_section(self, issue_data):
+        """Compose the linked issues section of the markdown.
+
+        Args:
+            issue_data: Raw issue data from Jira API
+
+        Returns:
+            list: Lines of markdown content for linked issues section
+        """
+        lines = ["## Linked Issues", ""]
+        issuelinks = issue_data.get("fields", {}).get("issuelinks", [])
+
+        if not issuelinks:
+            lines.append("None")
+            lines.append("")
+            return lines
+
+        groups = {}
+        for link in issuelinks:
+            link_type = link.get("type", {})
+            if "outwardIssue" in link:
+                label = link_type.get("outward", "Related").title()
+                issue = link["outwardIssue"]
+            elif "inwardIssue" in link:
+                label = link_type.get("inward", "Related").title()
+                issue = link["inwardIssue"]
+            else:
+                continue
+
+            groups.setdefault(label, []).append(issue)
+
+        for label, issues in groups.items():
+            lines.append(f"### {label}")
+            lines.append("")
+            for issue in issues:
+                key = issue.get("key", "UNKNOWN")
+                summary = issue.get("fields", {}).get("summary", "")
+                status = issue.get("fields", {}).get("status", {}).get("name", "")
+                lines.append(
+                    f"- [{key}]({self.base_url}/browse/{key}): {summary} ({status})"
+                )
+            lines.append("")
+
+        return lines
+
     def _parse_adf_to_markdown(self, adf_content):
         """Parse Atlassian Document Format to Markdown.
 
