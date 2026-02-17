@@ -1,0 +1,55 @@
+{
+  "answered": [
+    {
+      "question": "How should time tracking data be placed in the output?",
+      "answer": "Frontmatter fields: original_estimate, time_spent, remaining_estimate, progress. Uses Jira's human-readable format.",
+      "area": "frontmatter-vs-body",
+      "phase": "01",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "How should the environment field be handled?",
+      "answer": "Always as a body section (## Environment), even for short plain-text values. Consistent rendering.",
+      "area": "frontmatter-vs-body",
+      "phase": "01",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "How should linked issues be rendered?",
+      "answer": "Grouped by relationship type using ### sub-headings. Each link: [KEY](url): Summary (Status). Uses inward/outward directional labels.",
+      "area": "issue-link-rendering",
+      "phase": "01",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "How detailed should worklog rendering be?",
+      "answer": "Full markdown table with columns: Author, Time Spent, Date, Comment. Total time logged summary above table. ADF comments stripped to plain text.",
+      "area": "worklog-depth",
+      "phase": "01",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "How should empty/null fields be handled?",
+      "answer": "All fields always present. Frontmatter nulls use YAML null keyword, zeros show 0. Empty body sections show 'None'. Complete schema approach.",
+      "area": "empty-field-handling",
+      "phase": "01",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "How should null frontmatter values be represented in YAML?",
+      "answer": "YAML null keyword. Python yaml.safe_load parses as None. Explicit and unambiguous.",
+      "area": "empty-field-handling",
+      "phase": "01",
+      "date": "2026-02-17"
+    }
+  ],
+  "inferred": [
+    {
+      "id": "REQ-06",
+      "text": "Full standard field coverage with complete schema — all fields always present in output",
+      "priority": "Must-have",
+      "source": "Discussion: empty-field-handling"
+    }
+  ],
+  "deferred": []
+}
