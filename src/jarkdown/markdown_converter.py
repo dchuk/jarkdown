@@ -274,6 +274,35 @@ class MarkdownConverter:
 
         return lines
 
+    def _compose_subtasks_section(self, issue_data):
+        """Compose the subtasks section of the markdown.
+
+        Args:
+            issue_data: Raw issue data from Jira API
+
+        Returns:
+            list: Lines of markdown content for subtasks section
+        """
+        lines = ["## Subtasks", ""]
+        subtasks = issue_data.get("fields", {}).get("subtasks", [])
+
+        if not subtasks:
+            lines.append("None")
+            lines.append("")
+            return lines
+
+        for subtask in subtasks:
+            key = subtask.get("key", "UNKNOWN")
+            summary = subtask.get("fields", {}).get("summary", "")
+            status = subtask.get("fields", {}).get("status", {}).get("name", "")
+            issue_type = subtask.get("fields", {}).get("issuetype", {}).get("name", "")
+            lines.append(
+                f"- [{key}]({self.base_url}/browse/{key}): {summary} ({status}) \u2014 {issue_type}"
+            )
+
+        lines.append("")
+        return lines
+
     def _parse_adf_to_markdown(self, adf_content):
         """Parse Atlassian Document Format to Markdown.
 
