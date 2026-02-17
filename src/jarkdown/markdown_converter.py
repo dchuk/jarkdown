@@ -469,6 +469,106 @@ class MarkdownConverter:
         lines.append("")
         return lines
 
+    def _adf_to_plain_text(self, adf_content):
+        """Extract plain text from ADF content, stripping all formatting.
+
+        Args:
+            adf_content: ADF structure (dict), string, or None
+
+        Returns:
+            str: Plain text content
+        """
+        if adf_content is None:
+            return ""
+        if isinstance(adf_content, str):
+            return adf_content
+        if not isinstance(adf_content, dict):
+            return ""
+
+        if adf_content.get("type") == "text":
+            return adf_content.get("text", "")
+
+        children = adf_content.get("content", [])
+        parts = [self._adf_to_plain_text(child) for child in children]
+        return " ".join(part for part in parts if part)
+
+    def _compose_worklogs_section(self, issue_data):
+        """Compose the worklogs section of the markdown.
+
+        Args:
+            issue_data: Raw issue data from Jira API
+
+        Returns:
+            list: Lines of markdown content for worklogs section
+        """
+        fields = issue_data.get("fields", {})
+        worklog_data = fields.get("worklog") or {}
+        worklogs = worklog_data.get("worklogs", [])
+        total = worklog_data.get("total", 0)
+        max_results = worklog_data.get("maxResults", 20)
+
+        lines = ["## Worklogs", ""]
+
+        if not worklogs:
+            lines.append("None")
+            lines.append("")
+            return lines
+
+        # Calculate total time
+        total_seconds = sum(entry.get("timeSpentSeconds", 0) for entry in worklogs)
+        lines.append(f"**Total Time Logged:** {self._format_time(total_seconds)}")
+        lines.append("")
+
+        # Truncation warning
+        if total > max_results or total > len(worklogs):
+            lines.append(
+                f"> **Note:** Showing {len(worklogs)} of {total} worklogs."
+                " Additional worklogs may exist."
+            )
+            lines.append("")
+
+        # Table header
+        lines.append("| Author | Time Spent | Date | Comment |")
+        lines.append("|--------|-----------|------|---------|")
+
+        for entry in worklogs:
+            author = entry.get("author", {}).get("displayName", "Unknown")
+            time_spent = entry.get("timeSpent", "")
+            started = entry.get("started", "")
+            date = started[:10] if started else ""
+            comment = self._adf_to_plain_text(entry.get("comment"))
+            # Escape pipes for table safety
+            comment = comment.replace("|", "\\|")
+            lines.append(f"| {author} | {time_spent} | {date} | {comment} |")
+
+        lines.append("")
+        return lines
+
+    @staticmethod
+    def _format_time(seconds):
+        """Format seconds into human-readable time string.
+
+        Args:
+            seconds: Total seconds to format
+
+        Returns:
+            str: Formatted string like '1d 4h 30m'
+        """
+        days = seconds // 28800  # 8h workday
+        remaining = seconds % 28800
+        hours = remaining // 3600
+        remaining = remaining % 3600
+        minutes = remaining // 60
+
+        parts = []
+        if days:
+            parts.append(f"{days}d")
+        if hours:
+            parts.append(f"{hours}h")
+        if minutes:
+            parts.append(f"{minutes}m")
+        return " ".join(parts) if parts else "0m"
+
     def _compose_comments_section(self, issue_data, downloaded_attachments):
         """Compose the comments section of the markdown.
 
@@ -581,67 +681,54 @@ class MarkdownConverter:
         metadata["summary"] = fields.get("summary", "No Summary")
 
         # Type and status
-        if fields.get("issuetype"):
-            metadata["type"] = fields["issuetype"].get("name")
-        if fields.get("status"):
-            metadata["status"] = fields["status"].get("name")
+        metadata["type"] = (fields.get("issuetype") or {}).get("name")
+        metadata["status"] = (fields.get("status") or {}).get("name")
 
         # Priority
-        if fields.get("priority"):
-            metadata["priority"] = fields["priority"].get("name")
+        metadata["priority"] = (fields.get("priority") or {}).get("name")
 
         # Resolution
-        if fields.get("resolution"):
-            metadata["resolution"] = fields["resolution"].get("name")
+        metadata["resolution"] = (fields.get("resolution") or {}).get("name")
 
         # People
-        if fields.get("assignee"):
-            metadata["assignee"] = fields["assignee"].get("displayName")
-        if fields.get("reporter"):
-            metadata["reporter"] = fields["reporter"].get("displayName")
-        if fields.get("creator"):
-            metadata["creator"] = fields["creator"].get("displayName")
+        metadata["assignee"] = (fields.get("assignee") or {}).get("displayName")
+        metadata["reporter"] = (fields.get("reporter") or {}).get("displayName")
+        metadata["creator"] = (fields.get("creator") or {}).get("displayName")
 
         # Labels
-        if fields.get("labels"):
-            metadata["labels"] = fields["labels"]
+        metadata["labels"] = fields.get("labels", [])
 
         # Components
-        if fields.get("components"):
-            metadata["components"] = [
-                comp.get("name") for comp in fields["components"] if comp.get("name")
-            ]
+        metadata["components"] = [
+            comp.get("name")
+            for comp in fields.get("components", [])
+            if comp.get("name")
+        ]
 
         # Parent issue (for sub-tasks)
-        if fields.get("parent"):
-            metadata["parent_key"] = fields["parent"].get("key")
-            if fields["parent"].get("fields", {}).get("summary"):
-                metadata["parent_summary"] = fields["parent"]["fields"]["summary"]
+        metadata["parent_key"] = (fields.get("parent") or {}).get("key")
+        metadata["parent_summary"] = (
+            (fields.get("parent") or {}).get("fields", {}).get("summary")
+        )
 
         # Versions
-        if fields.get("versions"):
-            metadata["affects_versions"] = [
-                ver.get("name") for ver in fields["versions"] if ver.get("name")
-            ]
-        if fields.get("fixVersions"):
-            metadata["fix_versions"] = [
-                ver.get("name") for ver in fields["fixVersions"] if ver.get("name")
-            ]
+        metadata["affects_versions"] = [
+            ver.get("name")
+            for ver in fields.get("versions", [])
+            if ver.get("name")
+        ]
+        metadata["fix_versions"] = [
+            ver.get("name")
+            for ver in fields.get("fixVersions", [])
+            if ver.get("name")
+        ]
 
         # Dates
-        if fields.get("created"):
-            metadata["created_at"] = fields["created"]
-        if fields.get("updated"):
-            metadata["updated_at"] = fields["updated"]
-        if fields.get("resolutiondate"):
-            metadata["resolved_at"] = fields["resolutiondate"]
+        metadata["created_at"] = fields.get("created")
+        metadata["updated_at"] = fields.get("updated")
+        metadata["resolved_at"] = fields.get("resolutiondate")
 
-        # Remove None values and empty lists
-        return {
-            k: v
-            for k, v in metadata.items()
-            if v is not None and (not isinstance(v, list) or v)
-        }
+        return metadata
 
     def compose_markdown(self, issue_data, downloaded_attachments):
         """Compose the final markdown file content.
