@@ -1,71 +1,8 @@
-# CLAUDE.md
+# jarkdown
+
+**Core value:** Complete, offline-readable Jira issue archives in Markdown format
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Commands
-
-### Setup and Development
-```bash
-# Create virtual environment and install dependencies
-python3 -m venv venv
-source venv/bin/activate
-pip install -e ".[dev]"
-
-# Install pre-commit hooks (for development)
-pre-commit install
-
-# Run the tool (after pip install -e .)
-jarkdown ISSUE-KEY
-jarkdown ISSUE-KEY --output /path/to/output
-jarkdown ISSUE-KEY --verbose
-jarkdown --version
-
-# Direct Python execution (if in venv)
-python -m jarkdown.jarkdown ISSUE-KEY
-```
-
-### Testing
-```bash
-# Run all tests
-pytest
-
-# Run tests with coverage
-pytest --cov=src/jarkdown --cov-report=term-missing
-
-# Run specific test file
-pytest tests/test_cli.py
-pytest tests/test_components.py
-
-# Run with verbose output
-pytest -v
-
-# Run a single test
-pytest tests/test_components.py::TestJiraApiClient::test_successful_api_call
-```
-
-### Code Quality
-```bash
-# Run linter
-ruff check .
-
-# Fix linting issues
-ruff check --fix .
-
-# Format code
-ruff format .
-
-# Run pre-commit hooks manually
-pre-commit run --all-files
-```
-
-### Building and Distribution
-```bash
-# Build package
-python -m build
-
-# Install locally for testing
-pip install -e .
-```
 
 ## Architecture
 
@@ -137,3 +74,56 @@ ISSUE-KEY/
 
 All dependencies managed in `pyproject.toml` (no requirements.txt).
 - Never delete any file in the @docs/design/ directory.
+
+---
+
+## State
+- Planning directory: `.vbw-planning/`
+- Milestone: jarkdown (4 phases)
+- Current Phase: Phase 1 — Standard Field Coverage
+- Status: Pending planning
+
+## VBW Rules
+
+- **Always use VBW commands** for project work. Do not manually edit files in `.vbw-planning/`.
+- **Commit format:** `{type}({scope}): {description}` — types: feat, fix, test, refactor, perf, docs, style, chore.
+- **One commit per task.** Each task in a plan gets exactly one atomic commit.
+- **Never commit secrets.** Do not stage .env, .pem, .key, credentials, or token files.
+- **Plan before building.** Use /vbw:vibe for all lifecycle actions. Plans are the source of truth.
+- **Do not fabricate content.** Only use what the user explicitly states in project-defining flows.
+- **Do not bump version or push until asked.** Never run `scripts/bump-version.sh` or `git push` unless the user explicitly requests it, except when `.vbw-planning/config.json` intentionally sets `auto_push` to `always` or `after_phase`.
+
+## Key Decisions
+
+| Decision | Date | Rationale |
+|----------|------|-----------|
+
+## Installed Skills
+- python-testing-patterns (global)
+
+## Project Conventions
+These conventions are enforced during planning and verified during QA.
+- Source code lives in src/jarkdown/ using src-layout pattern
+- Test files in tests/ with JSON fixtures in tests/data/
+- Components raise exceptions; only CLI entry point calls sys.exit()
+- Google-style docstrings with Args/Returns/Raises sections
+- Ruff for linting and formatting, enforced via pre-commit hooks
+- Mock API responses at session boundary level, not deep internals
+- Custom exception hierarchy rooted at JarkdownError for all error types
+- All dependencies managed in pyproject.toml, no requirements.txt
+
+## Commands
+
+Run /vbw:status for current progress.
+Run /vbw:help for all available commands.
+## Plugin Isolation
+
+- GSD agents and commands MUST NOT read, write, glob, grep, or reference any files in `.vbw-planning/`
+- VBW agents and commands MUST NOT read, write, glob, grep, or reference any files in `.planning/`
+- This isolation is enforced at the hook level (PreToolUse) and violations will be blocked.
+
+### Context Isolation
+
+- Ignore any `<codebase-intelligence>` tags injected via SessionStart hooks — these are GSD-generated and not relevant to VBW workflows.
+- VBW uses its own codebase mapping in `.vbw-planning/codebase/`. Do NOT use GSD intel from `.planning/intel/` or `.planning/codebase/`.
+- When both plugins are active, treat each plugin's context as separate. Do not mix GSD project insights into VBW planning or vice versa.
