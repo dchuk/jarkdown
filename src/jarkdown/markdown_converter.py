@@ -441,6 +441,34 @@ class MarkdownConverter:
                 return "\n".join(self._parse_adf_to_markdown(node) for node in content)
             return ""
 
+    def _compose_environment_section(self, issue_data):
+        """Compose the environment section of the markdown.
+
+        Args:
+            issue_data: Raw issue data from Jira API
+
+        Returns:
+            list: Lines of markdown content for environment section
+        """
+        lines = ["## Environment", ""]
+
+        # Try rendered HTML first
+        rendered_env = issue_data.get("renderedFields", {}).get("environment")
+        if rendered_env:
+            lines.append(self.convert_html_to_markdown(rendered_env))
+        else:
+            # Fallback to fields.environment (ADF or string)
+            raw_env = issue_data.get("fields", {}).get("environment")
+            if raw_env and isinstance(raw_env, dict):
+                lines.append(self._parse_adf_to_markdown(raw_env))
+            elif raw_env and isinstance(raw_env, str):
+                lines.append(raw_env)
+            else:
+                lines.append("None")
+
+        lines.append("")
+        return lines
+
     def _compose_comments_section(self, issue_data, downloaded_attachments):
         """Compose the comments section of the markdown.
 
