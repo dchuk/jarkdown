@@ -1,0 +1,76 @@
+{
+  "conventions": [
+    {
+      "id": "CONV-001",
+      "rule": "Source code lives in src/jarkdown/ using src-layout pattern",
+      "source": "auto-detected",
+      "category": "file-structure",
+      "confidence": "high",
+      "detected_from": "STRUCTURE.md",
+      "added": "2026-02-17"
+    },
+    {
+      "id": "CONV-002",
+      "rule": "Test files in tests/ with JSON fixtures in tests/data/",
+      "source": "auto-detected",
+      "category": "testing",
+      "confidence": "high",
+      "detected_from": "TESTING.md",
+      "added": "2026-02-17"
+    },
+    {
+      "id": "CONV-003",
+      "rule": "Components raise exceptions; only CLI entry point calls sys.exit()",
+      "source": "auto-detected",
+      "category": "patterns",
+      "confidence": "high",
+      "detected_from": "ARCHITECTURE.md",
+      "added": "2026-02-17"
+    },
+    {
+      "id": "CONV-004",
+      "rule": "Google-style docstrings with Args/Returns/Raises sections",
+      "source": "auto-detected",
+      "category": "style",
+      "confidence": "high",
+      "detected_from": "CONVENTIONS.md",
+      "added": "2026-02-17"
+    },
+    {
+      "id": "CONV-005",
+      "rule": "Ruff for linting and formatting, enforced via pre-commit hooks",
+      "source": "auto-detected",
+      "category": "tooling",
+      "confidence": "high",
+      "detected_from": "CONVENTIONS.md",
+      "added": "2026-02-17"
+    },
+    {
+      "id": "CONV-006",
+      "rule": "Mock API responses at session boundary level, not deep internals",
+      "source": "auto-detected",
+      "category": "testing",
+      "confidence": "high",
+      "detected_from": "PATTERNS.md",
+      "added": "2026-02-17"
+    },
+    {
+      "id": "CONV-007",
+      "rule": "Custom exception hierarchy rooted at JarkdownError for all error types",
+      "source": "auto-detected",
+      "category": "patterns",
+      "confidence": "high",
+      "detected_from": "PATTERNS.md",
+      "added": "2026-02-17"
+    },
+    {
+      "id": "CONV-008",
+      "rule": "All dependencies managed in pyproject.toml, no requirements.txt",
+      "source": "auto-detected",
+      "category": "tooling",
+      "confidence": "high",
+      "detected_from": "DEPENDENCIES.md",
+      "added": "2026-02-17"
+    }
+  ]
+}
