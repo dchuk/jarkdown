@@ -1,11 +1,12 @@
 """Tests for field metadata cache and fetch_fields API method."""
 
 import json
+import re
 import time
 from unittest.mock import Mock, MagicMock, patch
 
 import pytest
-import requests
+from aioresponses import aioresponses
 
 from jarkdown.field_cache import FieldMetadataCache
 from jarkdown.jira_api_client import JiraApiClient
@@ -223,43 +224,36 @@ class TestCacheRefresh:
 class TestFetchFields:
     """Tests for JiraApiClient.fetch_fields() method."""
 
-    def test_fetch_fields_success(self, api_client, sample_fields):
+    async def test_fetch_fields_success(self, sample_fields):
         """Successful API call returns field list."""
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = sample_fields
-        mock_response.raise_for_status = Mock()
-
-        api_client.session.get = Mock(return_value=mock_response)
-
-        result = api_client.fetch_fields()
+        with aioresponses() as m:
+            m.get(
+                re.compile(r"https://example\.atlassian\.net/rest/api/3/field"),
+                payload=sample_fields,
+                status=200,
+            )
+            async with JiraApiClient("example.atlassian.net", "test@example.com", "test-token-123") as client:
+                result = await client.fetch_fields()
         assert result == sample_fields
-        api_client.session.get.assert_called_once_with(
-            "https://example.atlassian.net/rest/api/3/field"
-        )
 
-    def test_fetch_fields_auth_error(self, api_client):
+    async def test_fetch_fields_auth_error(self):
         """401 response raises AuthenticationError."""
-        mock_response = Mock()
-        mock_response.status_code = 401
-        mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(
-            response=mock_response
-        )
+        with aioresponses() as m:
+            m.get(
+                re.compile(r"https://example\.atlassian\.net/rest/api/3/field"),
+                status=401,
+            )
+            async with JiraApiClient("example.atlassian.net", "test@example.com", "test-token-123") as client:
+                with pytest.raises(AuthenticationError):
+                    await client.fetch_fields()
 
-        api_client.session.get = Mock(return_value=mock_response)
-
-        with pytest.raises(AuthenticationError):
-            api_client.fetch_fields()
-
-    def test_fetch_fields_api_error(self, api_client):
+    async def test_fetch_fields_api_error(self):
         """500 response raises JiraApiError."""
-        mock_response = Mock()
-        mock_response.status_code = 500
-        mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(
-            response=mock_response
-        )
-
-        api_client.session.get = Mock(return_value=mock_response)
-
-        with pytest.raises(JiraApiError):
-            api_client.fetch_fields()
+        with aioresponses() as m:
+            m.get(
+                re.compile(r"https://example\.atlassian\.net/rest/api/3/field"),
+                status=500,
+            )
+            async with JiraApiClient("example.atlassian.net", "test@example.com", "test-token-123") as client:
+                with pytest.raises(JiraApiError):
+                    await client.fetch_fields()
