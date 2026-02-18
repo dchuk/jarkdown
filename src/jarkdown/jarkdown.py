@@ -179,6 +179,19 @@ Environment variables:
         "--verbose", "-v", action="store_true", help="Enable verbose logging"
     )
     parser.add_argument(
+        "--refresh-fields",
+        action="store_true",
+        help="Force refresh of cached Jira field metadata",
+    )
+    parser.add_argument(
+        "--include-fields",
+        help="Comma-separated list of custom field names to include",
+    )
+    parser.add_argument(
+        "--exclude-fields",
+        help="Comma-separated list of custom field names to exclude",
+    )
+    parser.add_argument(
         "--version",
         action="version",
         version=get_version(),
