@@ -683,12 +683,19 @@ class MarkdownConverter:
         # Type and status
         metadata["type"] = (fields.get("issuetype") or {}).get("name")
         metadata["status"] = (fields.get("status") or {}).get("name")
+        metadata["status_category"] = (
+            (fields.get("status") or {}).get("statusCategory", {}).get("name")
+        )
 
         # Priority
         metadata["priority"] = (fields.get("priority") or {}).get("name")
 
         # Resolution
         metadata["resolution"] = (fields.get("resolution") or {}).get("name")
+
+        # Project
+        metadata["project"] = (fields.get("project") or {}).get("name")
+        metadata["project_key"] = (fields.get("project") or {}).get("key")
 
         # People
         metadata["assignee"] = (fields.get("assignee") or {}).get("displayName")
@@ -727,6 +734,25 @@ class MarkdownConverter:
         metadata["created_at"] = fields.get("created")
         metadata["updated_at"] = fields.get("updated")
         metadata["resolved_at"] = fields.get("resolutiondate")
+
+        # Due date
+        metadata["duedate"] = fields.get("duedate")
+
+        # Time tracking
+        timetracking = fields.get("timetracking") or {}
+        metadata["original_estimate"] = timetracking.get("originalEstimate")
+        metadata["time_spent"] = timetracking.get("timeSpent")
+        metadata["remaining_estimate"] = timetracking.get("remainingEstimate")
+
+        # Progress
+        metadata["progress"] = (fields.get("progress") or {}).get("percent", 0)
+        metadata["aggregate_progress"] = (
+            (fields.get("aggregateprogress") or {}).get("percent", 0)
+        )
+
+        # Votes and watches
+        metadata["votes"] = (fields.get("votes") or {}).get("votes", 0)
+        metadata["watches"] = (fields.get("watches") or {}).get("watchCount", 0)
 
         return metadata
 
