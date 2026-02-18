@@ -33,7 +33,19 @@ Full documentation is available at [jarkdown.readthedocs.io](https://jarkdown.re
 
 ### Quick Install (Recommended)
 
-Install directly from PyPI with a single command:
+Install as an isolated tool with [uv](https://docs.astral.sh/uv/):
+```bash
+uv tool install jarkdown
+```
+
+### Alternative: pipx
+
+```bash
+pipx install jarkdown
+```
+
+### Fallback: pip
+
 ```bash
 pip install jarkdown
 ```
