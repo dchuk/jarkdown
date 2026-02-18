@@ -199,11 +199,9 @@ git clone https://github.com/YOUR-USERNAME/jarkdown.git
 cd jarkdown
 ```
 
-2. **Create a virtual environment** and install dependencies:
+2. **Install dependencies** (uv manages the virtual environment automatically):
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -e ".[dev]"
+uv sync --dev
 ```
 
 3. **Install pre-commit hooks**:
@@ -220,8 +218,8 @@ git checkout -b feature/your-feature-name
 
 2. **Make your changes** and ensure tests pass:
 ```bash
-pytest
-pytest --cov=src/jarkdown --cov-report=term-missing
+uv run pytest
+uv run pytest --cov=src/jarkdown --cov-report=term-missing
 ```
 
 3. **Commit your changes** (pre-commit hooks will run automatically):
@@ -250,13 +248,13 @@ Then open a pull request on GitHub.
 Run the test suite:
 ```bash
 # Run all tests
-pytest
+uv run pytest
 
 # Run with coverage
-pytest --cov=src/jarkdown --cov-report=term-missing
+uv run pytest --cov=src/jarkdown --cov-report=term-missing
 
 # Run specific test file
-pytest tests/test_cli.py
+uv run pytest tests/test_cli.py
 ```
 
 ### Reporting Issues
