@@ -1,5 +1,6 @@
 """Handler for downloading and managing Jira attachments."""
 
+import asyncio
 import logging
 from pathlib import Path
 
@@ -18,8 +19,8 @@ class AttachmentHandler:
         self.api_client = api_client
         self.logger = logging.getLogger(__name__)
 
-    def download_attachment(self, attachment, output_dir):
-        """Download a single attachment.
+    async def download_attachment(self, attachment, output_dir):
+        """Download a single attachment asynchronously.
 
         Args:
             attachment: Attachment metadata from Jira API
@@ -39,7 +40,7 @@ class AttachmentHandler:
 
         file_path = output_dir / filename
 
-        # Handle filename conflicts
+        # Handle filename conflicts (sync — just stat checks)
         counter = 1
         original_path = file_path
         while file_path.exists():
@@ -51,12 +52,10 @@ class AttachmentHandler:
         self.logger.info(f"  Downloading {filename} ({self._format_size(size)})...")
 
         try:
-            response = self.api_client.download_attachment_stream(content_url)
-
-            with open(file_path, "wb") as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        f.write(chunk)
+            response = await self.api_client.download_attachment_stream(content_url)
+            # Buffer entire attachment then write via thread to avoid blocking event loop
+            data = await response.read()
+            await asyncio.to_thread(file_path.write_bytes, data)
 
             return {
                 "attachment_id": attachment.get("id"),
@@ -71,8 +70,8 @@ class AttachmentHandler:
                 f"Error downloading {filename}: {e}", filename=filename
             )
 
-    def download_all_attachments(self, attachments, output_dir):
-        """Download all attachments for an issue.
+    async def download_all_attachments(self, attachments, output_dir):
+        """Download all attachments for an issue asynchronously (sequential).
 
         Args:
             attachments: List of attachment metadata from Jira API
@@ -92,7 +91,7 @@ class AttachmentHandler:
         downloaded = []
         for attachment in attachments:
             try:
-                result = self.download_attachment(attachment, output_dir)
+                result = await self.download_attachment(attachment, output_dir)
                 if result:
                     downloaded.append(result)
             except AttachmentDownloadError as e:
