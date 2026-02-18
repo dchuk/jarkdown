@@ -1,0 +1,255 @@
+{
+  "key": "FULL-100",
+  "fields": {
+    "summary": "Full Fields Integration Test Issue",
+    "issuetype": {
+      "name": "Story"
+    },
+    "status": {
+      "name": "In Progress",
+      "statusCategory": {
+        "id": 4,
+        "key": "indeterminate",
+        "colorName": "yellow",
+        "name": "In Progress"
+      }
+    },
+    "priority": {
+      "name": "High"
+    },
+    "resolution": {
+      "name": "Fixed"
+    },
+    "project": {
+      "id": "10000",
+      "key": "FULL",
+      "name": "Full Fields Project",
+      "projectTypeKey": "software"
+    },
+    "assignee": {
+      "displayName": "John Doe"
+    },
+    "reporter": {
+      "displayName": "Jane Smith"
+    },
+    "creator": {
+      "displayName": "Jane Smith"
+    },
+    "labels": ["backend", "performance"],
+    "components": [
+      {"name": "API"},
+      {"name": "Database"}
+    ],
+    "parent": {
+      "key": "FULL-50",
+      "fields": {
+        "summary": "Epic for Q3 Features"
+      }
+    },
+    "versions": [
+      {"name": "v1.0"},
+      {"name": "v1.1"}
+    ],
+    "fixVersions": [
+      {"name": "v2.0"}
+    ],
+    "created": "2025-01-15T10:30:00.000+0000",
+    "updated": "2025-02-20T14:45:00.000+0000",
+    "resolutiondate": "2025-02-18T09:00:00.000+0000",
+    "duedate": "2025-06-15",
+    "timetracking": {
+      "originalEstimate": "2d",
+      "timeSpent": "1d 2h",
+      "remainingEstimate": "6h",
+      "originalEstimateSeconds": 57600,
+      "timeSpentSeconds": 36000,
+      "remainingEstimateSeconds": 21600
+    },
+    "votes": {
+      "self": "https://example.atlassian.net/rest/api/3/issue/FULL-100/votes",
+      "votes": 7,
+      "hasVoted": false
+    },
+    "watches": {
+      "self": "https://example.atlassian.net/rest/api/3/issue/FULL-100/watchers",
+      "watchCount": 4,
+      "isWatching": true
+    },
+    "progress": {
+      "progress": 36000,
+      "total": 57600,
+      "percent": 62
+    },
+    "aggregateprogress": {
+      "progress": 50000,
+      "total": 80000,
+      "percent": 62
+    },
+    "issuelinks": [
+      {
+        "id": "10001",
+        "type": {
+          "name": "Blocks",
+          "inward": "is blocked by",
+          "outward": "blocks"
+        },
+        "outwardIssue": {
+          "key": "FULL-200",
+          "fields": {
+            "summary": "Blocked downstream task",
+            "status": {
+              "name": "To Do"
+            }
+          }
+        }
+      },
+      {
+        "id": "10002",
+        "type": {
+          "name": "Blocks",
+          "inward": "is blocked by",
+          "outward": "blocks"
+        },
+        "inwardIssue": {
+          "key": "FULL-50",
+          "fields": {
+            "summary": "Upstream blocker",
+            "status": {
+              "name": "Done"
+            }
+          }
+        }
+      },
+      {
+        "id": "10003",
+        "type": {
+          "name": "Relates",
+          "inward": "relates to",
+          "outward": "relates to"
+        },
+        "outwardIssue": {
+          "key": "FULL-300",
+          "fields": {
+            "summary": "Related feature request",
+            "status": {
+              "name": "In Review"
+            }
+          }
+        }
+      }
+    ],
+    "subtasks": [
+      {
+        "key": "FULL-101",
+        "fields": {
+          "summary": "Write unit tests",
+          "status": {
+            "name": "To Do"
+          },
+          "issuetype": {
+            "name": "Sub-task"
+          }
+        }
+      },
+      {
+        "key": "FULL-102",
+        "fields": {
+          "summary": "Update documentation",
+          "status": {
+            "name": "Done"
+          },
+          "issuetype": {
+            "name": "Sub-task"
+          }
+        }
+      }
+    ],
+    "worklog": {
+      "startAt": 0,
+      "maxResults": 20,
+      "total": 2,
+      "worklogs": [
+        {
+          "author": {
+            "displayName": "Alice Dev"
+          },
+          "started": "2025-02-10T09:00:00.000+0000",
+          "timeSpent": "4h",
+          "timeSpentSeconds": 14400,
+          "comment": {
+            "type": "doc",
+            "version": 1,
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Implemented core API endpoints"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "author": {
+            "displayName": "Bob Eng"
+          },
+          "started": "2025-02-11T14:00:00.000+0000",
+          "timeSpent": "2h 30m",
+          "timeSpentSeconds": 9000,
+          "comment": {
+            "type": "doc",
+            "version": 1,
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Code review and fixes"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "comment": {
+      "comments": [
+        {
+          "id": "20001",
+          "author": {
+            "displayName": "Jane Smith"
+          },
+          "created": "2025-02-16T10:30:00.000+0000",
+          "renderedBody": "<p>This is looking great! Let's move forward with the implementation.</p>"
+        }
+      ],
+      "total": 1
+    },
+    "attachment": [
+      {
+        "id": "30001",
+        "filename": "architecture.png",
+        "size": 256789,
+        "mimeType": "image/png",
+        "content": "https://example.atlassian.net/rest/api/3/attachment/content/30001"
+      }
+    ]
+  },
+  "renderedFields": {
+    "description": "<p>This is the <strong>full fields integration test</strong> issue with all standard and Phase 1 fields populated.</p><ul><li>API endpoint design</li><li>Database schema changes</li></ul>",
+    "environment": "<p>Production \u2014 Ubuntu 22.04</p>",
+    "comment": {
+      "comments": [
+        {
+          "id": "20001",
+          "body": "<p>This is looking great! Let's move forward with the implementation.</p>"
+        }
+      ]
+    }
+  }
+}
