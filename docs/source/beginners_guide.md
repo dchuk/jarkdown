@@ -57,7 +57,13 @@ You'll need to use a terminal to run Jarkdown:
 
 ## Step 3: Install Jarkdown
 
-In your terminal, type this command and press Enter:
+The recommended way to install jarkdown is with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv tool install jarkdown
+```
+
+If you don't have uv, you can use pip instead:
 
 ```bash
 pip install jarkdown
@@ -87,7 +93,17 @@ You should see the version number displayed.
 
 You need to tell Jarkdown how to connect to your Jira instance.
 
-### Creating the Configuration File
+### Option A: Use the Setup Wizard (Easiest)
+
+Run the interactive setup wizard:
+
+```bash
+jarkdown setup
+```
+
+This will prompt you for your Jira domain, email, and API token, then create the configuration file automatically.
+
+### Option B: Create the Configuration File Manually
 
 1. In your terminal, navigate to where you want to work with Jira issues. For example:
    - Windows: `cd C:\Users\YourName\Documents`
@@ -130,10 +146,10 @@ Now you're ready to export your first Jira issue!
 To export a Jira issue, you need its key (like "PROJ-123"). In your terminal, type:
 
 ```bash
-jarkdown PROJ-123
+jarkdown export PROJ-123
 ```
 
-Replace "PROJ-123" with your actual issue key.
+Replace "PROJ-123" with your actual issue key. (You can also use the shorthand `jarkdown PROJ-123`.)
 
 This will:
 1. Connect to Jira and fetch the issue
@@ -141,13 +157,26 @@ This will:
 3. Create a folder named after the issue
 4. Save everything as markdown files
 
+### Exporting Multiple Issues
+
+Once you're comfortable with single exports, you can export multiple issues at once:
+
+```bash
+# Export several issues by key
+jarkdown bulk PROJ-1 PROJ-2 PROJ-3
+
+# Export issues matching a search query
+jarkdown query 'project = PROJ AND status = Done'
+```
+
 ### Where Are My Files?
 
-Jarkdown creates a new folder in your current directory. For example, if you run `jarkdown PROJ-123`, it creates:
+Jarkdown creates a new folder in your current directory. For example, if you run `jarkdown export PROJ-123`, it creates:
 
 ```
 PROJ-123/
 ├── PROJ-123.md       (the issue content)
+├── PROJ-123.json     (the raw API data)
 ├── image1.png        (any attachments)
 ├── document.pdf
 └── ...
@@ -158,13 +187,13 @@ PROJ-123/
 To save files in a specific location:
 
 ```bash
-jarkdown PROJ-123 --output C:\Users\YourName\Desktop\JiraExports
+jarkdown export PROJ-123 --output C:\Users\YourName\Desktop\JiraExports
 ```
 
 Or on Mac/Linux:
 
 ```bash
-jarkdown PROJ-123 --output ~/Desktop/JiraExports
+jarkdown export PROJ-123 --output ~/Desktop/JiraExports
 ```
 
 ## Troubleshooting
@@ -178,6 +207,7 @@ jarkdown PROJ-123 --output ~/Desktop/JiraExports
 - Double-check your API token is correct
 - Verify your email address is the one you use for Jira
 - Make sure your `.env` file is in the current directory
+- Try running `jarkdown setup` to reconfigure
 
 ### "Issue not found" error
 - Check that the issue key is correct (including the project prefix)
@@ -199,7 +229,7 @@ If you encounter issues:
 ## Next Steps
 
 Once you're comfortable with basic usage, explore:
-- The [Usage Guide](usage.md) for advanced options
+- The [Usage Guide](usage.md) for advanced options including bulk export, JQL queries, and custom field filtering
 - The [Configuration Guide](configuration.md) for additional settings
 - Using `jarkdown --help` to see all available options
 

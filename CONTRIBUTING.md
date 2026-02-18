@@ -42,23 +42,17 @@ Unsure where to begin contributing? You can start by looking through these `begi
    cd jarkdown
    ```
 
-3. **Create a virtual environment**:
+3. **Install dependencies** (uv creates and manages the virtual environment automatically):
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   uv sync --dev
    ```
 
-4. **Install dependencies**:
-   ```bash
-   pip install -e ".[dev]"  # Install package in editable mode with dev dependencies
-   ```
-
-5. **Install pre-commit hooks**:
+4. **Install pre-commit hooks**:
    ```bash
    pre-commit install
    ```
 
-6. **Create a branch** for your feature or fix:
+5. **Create a branch** for your feature or fix:
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -69,22 +63,23 @@ Before submitting a pull request, make sure all tests pass:
 
 ```bash
 # Run all tests
-pytest
+uv run pytest
 
 # Run with coverage report
-pytest --cov=src/jarkdown --cov-report=term-missing
+uv run pytest --cov=src/jarkdown --cov-report=term-missing
 
 # Run specific test file
-pytest tests/test_cli.py
+uv run pytest tests/test_cli.py
+uv run pytest tests/test_components.py
 
 # Run with verbose output
-pytest -v
+uv run pytest -v
 ```
 
 Our CI pipeline requires:
 - All tests must pass
 - Code coverage should not decrease
-- No linting errors (if linter is configured)
+- No linting errors
 
 ## Pull Request Process
 
@@ -120,7 +115,7 @@ The project documentation is built with Sphinx and hosted on [ReadTheDocs](https
 
 1. **Install documentation dependencies**:
    ```bash
-   pip install -r docs/requirements.txt
+   uv sync --dev
    ```
 
 2. **Build the documentation**:
@@ -192,6 +187,64 @@ feat(export): add support for exporting comments
 Closes #123
 ```
 
+## Project Structure
+
+Understanding the codebase:
+
+```
+src/jarkdown/
+├── jarkdown.py              # Main CLI entry point (subcommand dispatch)
+├── jira_api_client.py       # Async Jira API interaction (aiohttp)
+├── attachment_handler.py    # Async attachment downloading
+├── markdown_converter.py    # HTML/ADF to Markdown conversion
+├── bulk_exporter.py         # Concurrent multi-issue export
+├── retry.py                 # Exponential backoff retry infrastructure
+├── config_manager.py        # .jarkdown.toml configuration
+├── custom_field_renderer.py # Type-aware custom field rendering
+├── field_cache.py           # XDG-compliant field metadata cache
+├── exceptions.py            # Custom exception hierarchy
+tests/
+├── test_cli.py              # CLI integration tests
+├── test_components.py       # Unit tests for components
+└── data/                    # JSON fixtures for mocked API responses
+docs/
+└── source/                  # Sphinx documentation
+pyproject.toml               # Project configuration and dependencies
+```
+
+## Testing Guidelines
+
+### Writing Tests
+
+- Write tests for all new functionality
+- Use descriptive test names that explain what's being tested
+- Use pytest fixtures for common setup
+- Mock external dependencies (API calls, file I/O)
+- Use `pytest-asyncio` for async test functions and `aioresponses` for mocking HTTP calls
+
+Example async test:
+
+```python
+from aioresponses import aioresponses
+
+async def test_fetch_issue_returns_data(api_client):
+    """Test that fetch_issue returns issue data."""
+    with aioresponses() as m:
+        m.get(
+            "https://test.atlassian.net/rest/api/3/issue/TEST-1",
+            payload={"key": "TEST-1", "fields": {"summary": "Test"}}
+        )
+        result = await api_client.fetch_issue("TEST-1")
+        assert result["key"] == "TEST-1"
+```
+
+### Test Coverage
+
+Aim for high test coverage:
+- New features should have >90% coverage
+- Bug fixes should include regression tests
+- Edge cases should be tested
+
 ## Additional Notes
 
 ### Issue and Pull Request Labels
@@ -214,4 +267,4 @@ Contributors will be recognized in our README.md file. Thank you for your contri
 
 Feel free to open an issue with your question or reach out to the maintainers directly.
 
-Thank you for contributing! 🎉
+Thank you for contributing!

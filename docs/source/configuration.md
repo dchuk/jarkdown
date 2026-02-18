@@ -1,6 +1,6 @@
 # Configuration
 
-jarkdown uses environment variables for configuration. This keeps sensitive credentials out of your code and command history.
+jarkdown uses environment variables for credentials and an optional TOML file for field selection. This keeps sensitive credentials out of your code and command history.
 
 ## Required Environment Variables
 
@@ -35,6 +35,16 @@ JIRA_API_TOKEN=ATATT3xFfGF0A1B2C3D4E5F6G7H8I9J0
 ```
 
 Generate this from your [Atlassian Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens).
+
+## Setup Wizard
+
+The easiest way to configure credentials:
+
+```bash
+jarkdown setup
+```
+
+This interactive wizard prompts for your domain, email, and API token (hidden input), then writes a `.env` file in the current directory. If a `.env` file already exists, you'll be asked to confirm before overwriting.
 
 ## Configuration Methods
 
@@ -114,6 +124,67 @@ export JIRA_API_TOKEN=your_token_here
 - Automatic unloading when leaving
 - Per-project configuration
 
+## Field Selection Configuration
+
+Control which custom fields appear in your exported Markdown using a `.jarkdown.toml` file or CLI flags.
+
+### `.jarkdown.toml` File
+
+Create a `.jarkdown.toml` file in your working directory:
+
+#### Include specific fields only
+
+```toml
+[fields]
+include = ["Story Points", "Sprint", "Team", "Epic Link"]
+```
+
+When `include` is set, only the listed custom fields will appear in the output.
+
+#### Exclude specific fields
+
+```toml
+[fields]
+exclude = ["Internal Notes", "Dev Notes", "Epic Color", "Rank"]
+```
+
+When `exclude` is set, the listed fields are hidden but all others are included.
+
+### CLI Flags
+
+CLI flags override `.jarkdown.toml` settings entirely:
+
+```bash
+# Include only these custom fields (overrides toml include)
+jarkdown export PROJ-123 --include-fields "Story Points,Sprint"
+
+# Exclude these custom fields (overrides toml exclude)
+jarkdown export PROJ-123 --exclude-fields "Internal Notes,Dev Notes"
+
+# Force refresh of cached field metadata
+jarkdown export PROJ-123 --refresh-fields
+```
+
+### Priority Order
+
+1. CLI `--include-fields` / `--exclude-fields` (highest priority)
+2. `.jarkdown.toml` `[fields]` section
+3. Default: include all custom fields with non-null values
+
+### Field Metadata Cache
+
+jarkdown caches Jira field definitions for 24 hours to avoid repeated API calls. The cache is stored in your platform's config directory:
+
+- **Linux**: `~/.config/jarkdown/fields-{domain}.json`
+- **macOS**: `~/Library/Application Support/jarkdown/fields-{domain}.json`
+- **Windows**: `%APPDATA%\jarkdown\fields-{domain}.json`
+
+To force a refresh:
+
+```bash
+jarkdown export PROJ-123 --refresh-fields
+```
+
 ## Security Best Practices
 
 ### Protecting Your Credentials
@@ -175,7 +246,7 @@ echo "JIRA_API_TOKEN: ${JIRA_API_TOKEN:=NOT SET}"
 Test with a known accessible issue:
 
 ```bash
-jarkdown PROJ-1 --verbose
+jarkdown export PROJ-1 --verbose
 ```
 
 ### Common Configuration Issues
@@ -185,6 +256,11 @@ jarkdown PROJ-1 --verbose
 **Solution:** Ensure the variable is exported:
 ```bash
 export JIRA_DOMAIN=yourcompany.atlassian.net
+```
+
+Or run the setup wizard:
+```bash
+jarkdown setup
 ```
 
 #### Issue: "401 Unauthorized"
@@ -215,10 +291,10 @@ For multiple Jira instances:
 
 # Switch between them
 cp .env.prod .env
-jarkdown PROD-123
+jarkdown export PROD-123
 
 cp .env.dev .env
-jarkdown DEV-456
+jarkdown export DEV-456
 ```
 
 ### Configuration in CI/CD
@@ -232,8 +308,8 @@ For GitHub Actions:
     JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
     JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
   run: |
-    pip install jarkdown
-    jarkdown PROJ-123
+    uv tool install jarkdown
+    jarkdown export PROJ-123
 ```
 
 ### Proxy Configuration
@@ -246,7 +322,7 @@ export HTTP_PROXY=http://proxy.company.com:8080
 export HTTPS_PROXY=http://proxy.company.com:8080
 
 # Run jarkdown
-jarkdown PROJ-123
+jarkdown export PROJ-123
 ```
 
 ## Troubleshooting Configuration
@@ -256,9 +332,7 @@ jarkdown PROJ-123
 See exactly what's being sent:
 
 ```bash
-# Enable debug logging (if implemented)
-export JIRA_DEBUG=true
-jarkdown PROJ-123 --verbose
+jarkdown export PROJ-123 --verbose
 ```
 
 ### Reset Configuration
@@ -272,7 +346,8 @@ unset JIRA_DOMAIN JIRA_EMAIL JIRA_API_TOKEN
 # Remove .env file
 rm .env
 
-# Start over with configuration
+# Start over with the setup wizard
+jarkdown setup
 ```
 
 ## Next Steps

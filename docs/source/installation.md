@@ -10,7 +10,21 @@ This guide will walk you through installing jarkdown and setting up the required
 
 ## Install from PyPI
 
-Once published to PyPI, you'll be able to install with:
+### Recommended: uv
+
+Install as an isolated tool with [uv](https://docs.astral.sh/uv/):
+
+```bash
+uv tool install jarkdown
+```
+
+### Alternative: pipx
+
+```bash
+pipx install jarkdown
+```
+
+### Fallback: pip
 
 ```bash
 pip install jarkdown
@@ -22,20 +36,16 @@ For the latest development version or to contribute:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/jarkdown.git
+git clone https://github.com/chrisbyboston/jarkdown.git
 cd jarkdown
 
-# Create a virtual environment (recommended)
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install in development mode
-pip install -e ".[dev]"
+# Install with uv (creates and manages the virtual environment automatically)
+uv sync --dev
 ```
 
 ## Authentication Setup
 
-jarkdown requires three environment variables for authentication:
+jarkdown requires three environment variables for authentication.
 
 ### 1. Get Your Atlassian API Token
 
@@ -45,7 +55,17 @@ jarkdown requires three environment variables for authentication:
 4. Give it a descriptive name (e.g., "jarkdown")
 5. Copy the generated token - you won't be able to see it again!
 
-### 2. Create Environment File
+### 2. Run the Setup Wizard
+
+The easiest way to configure jarkdown:
+
+```bash
+jarkdown setup
+```
+
+This interactively prompts for your domain, email, and API token, then writes a `.env` file.
+
+### 3. Or Create Environment File Manually
 
 Create a `.env` file in your project directory:
 
@@ -58,7 +78,7 @@ JIRA_API_TOKEN=your_api_token_here
 
 **Security Note:** Never commit the `.env` file to version control! It's already included in `.gitignore`.
 
-### 3. Alternative: Export Variables
+### 4. Alternative: Export Variables
 
 You can also export the variables in your shell:
 
@@ -78,8 +98,9 @@ Test that everything is working:
 # Check the installation
 jarkdown --help
 
+# You should see subcommands: export, bulk, query, setup
 # Test with a known issue
-jarkdown PROJ-123
+jarkdown export PROJ-123
 ```
 
 If you see the issue downloaded successfully, you're all set!
@@ -91,18 +112,18 @@ If you see the issue downloaded successfully, you're all set!
 If `jarkdown` isn't recognized:
 
 ```bash
-# Ensure you're in the virtual environment
-which python
+# If installed with uv tool
+uv tool list  # verify jarkdown is listed
 
 # Reinstall
-pip install -e .
+uv tool install --force jarkdown
 ```
 
 ### Authentication errors
 
 - **401 Unauthorized**: Check your email and API token are correct
 - **Domain not found**: Verify JIRA_DOMAIN doesn't include `https://`
-- **Missing variables**: Ensure all three environment variables are set
+- **Missing variables**: Ensure all three environment variables are set, or run `jarkdown setup`
 
 ### Permission denied
 

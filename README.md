@@ -3,8 +3,8 @@
 [![Documentation Status](https://readthedocs.org/projects/jarkdown/badge/?version=latest)](https://jarkdown.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/chrisbyboston/jarkdown/actions)
-[![Coverage](https://img.shields.io/badge/coverage-87%25-green)](https://github.com/chrisbyboston/jarkdown/actions)
+[![Tests](https://img.shields.io/badge/tests-230%20passing-brightgreen)](https://github.com/chrisbyboston/jarkdown/actions)
+[![Coverage](https://img.shields.io/badge/coverage-230%20tests-green)](https://github.com/chrisbyboston/jarkdown/actions)
 
 A command-line tool that exports Jira Cloud issues into clean, portable Markdown files with all attachments.
 
@@ -23,11 +23,16 @@ Full documentation is available at [jarkdown.readthedocs.io](https://jarkdown.re
 ## Key Features
 
 - **Complete Export:** Fetches all issue metadata, descriptions, comments, and downloads all attachments locally.
-- **Rich Metadata:** Exports comprehensive metadata in YAML frontmatter including labels, components, versions, parent issues, and more.
-- **Comment Support:** Exports all issue comments with author, date, and formatted content, including support for Atlassian Document Format (ADF).
+- **Bulk Export:** Export multiple issues concurrently with `jarkdown bulk KEY1 KEY2 --concurrency 5`.
+- **JQL Query Export:** Export issues matching JQL queries with `jarkdown query 'project = FOO AND status = Done'`.
+- **Rich Metadata:** Exports comprehensive YAML frontmatter including project, status category, time tracking, votes, watches, issue links, due dates, and more.
+- **Custom Field Support:** Type-aware rendering of Jira custom fields with configurable include/exclude filtering.
+- **ADF Parsing:** Full Atlassian Document Format support for descriptions and comments (paragraphs, headings, lists, code blocks, tables, media, mentions, panels, and more).
+- **Async Processing:** Built on `aiohttp` for concurrent API calls and efficient bulk operations.
+- **Retry & Rate Limiting:** Exponential backoff with jitter for transient errors (429, 503, 504) and `Retry-After` header support.
 - **Preserves Formatting:** Converts Jira's HTML to GitHub-flavored Markdown, keeping headings, lists, code blocks, and tables intact.
 - **Embeds Local Links:** Automatically references downloaded attachments with local links in the Markdown file.
-- **Simple and Fast:** A command-line tool that is easy to script and integrate into your workflow.
+- **Field Filtering:** Include or exclude custom fields via CLI flags or `.jarkdown.toml` config file.
 
 ## Installation
 
@@ -52,19 +57,19 @@ pip install jarkdown
 
 ### Configuration
 
-After installation, you need to set up your Jira credentials. Create a file named `.env` in the directory where you'll run the `jarkdown` command:
+After installation, run the setup wizard to configure your Jira credentials:
 
-1. Create the `.env` file with the following content:
+```bash
+jarkdown setup
+```
+
+Or create a `.env` file manually in the directory where you'll run jarkdown:
+
 ```
 JIRA_DOMAIN=your-company.atlassian.net
 JIRA_EMAIL=your-email@example.com
 JIRA_API_TOKEN=your-api-token-here
 ```
-
-2. Replace the values with your actual Jira information:
-   - `JIRA_DOMAIN`: Your Atlassian domain (e.g., company.atlassian.net)
-   - `JIRA_EMAIL`: The email address you use to log into Jira
-   - `JIRA_API_TOKEN`: Your personal API token (see below)
 
 ### Getting Your Jira API Token
 
@@ -92,38 +97,106 @@ uv sync --dev
 
 ## Usage
 
-Basic usage:
-```bash
-jarkdown ISSUE-KEY
-```
+### Single Issue Export
 
-Examples:
 ```bash
-# Download an issue to the current directory
+# Export a single issue (subcommand form)
+jarkdown export PROJ-123
+
+# Backward-compatible shorthand
 jarkdown PROJ-123
 
-# Download to a specific directory
-jarkdown PROJ-123 --output ~/Documents/jira-exports
+# Export to a specific directory
+jarkdown export PROJ-123 --output ~/Documents/jira-exports
 
 # Enable verbose logging
-jarkdown PROJ-123 --verbose
+jarkdown export PROJ-123 --verbose
+```
+
+### Bulk Export
+
+```bash
+# Export multiple issues concurrently
+jarkdown bulk PROJ-1 PROJ-2 PROJ-3
+
+# Control concurrency and output location
+jarkdown bulk PROJ-1 PROJ-2 PROJ-3 --concurrency 5 --output ~/exports
+
+# Group into a named batch directory
+jarkdown bulk PROJ-1 PROJ-2 --batch-name sprint-23
+```
+
+### JQL Query Export
+
+```bash
+# Export all issues matching a JQL query
+jarkdown query 'project = FOO AND status = Done'
+
+# Limit results
+jarkdown query 'project = FOO AND sprint in openSprints()' --max-results 100
+
+# With concurrency control
+jarkdown query 'assignee = currentUser()' --concurrency 5
+```
+
+### Custom Field Filtering
+
+```bash
+# Include only specific custom fields
+jarkdown export PROJ-123 --include-fields "Story Points,Sprint"
+
+# Exclude specific custom fields
+jarkdown export PROJ-123 --exclude-fields "Internal Notes,Dev Notes"
+```
+
+Or configure in `.jarkdown.toml`:
+```toml
+[fields]
+exclude = ["Internal Notes", "Dev Notes"]
+```
+
+### Other Commands
+
+```bash
+# Interactive setup wizard
+jarkdown setup
 
 # Show version
 jarkdown --version
+
+# Show help
+jarkdown --help
 ```
 
 ## Output Structure
 
 The tool creates a directory named after the issue key containing:
 - A markdown file with the issue content
+- A JSON file with the raw API response
 - All attachments downloaded from the issue
 
-Example:
+Single issue example:
 ```
 PROJ-123/
 ├── PROJ-123.md       # Issue content in markdown
+├── PROJ-123.json     # Raw Jira API response
 ├── diagram.png       # Downloaded attachments
 ├── report.pdf
+└── ...
+```
+
+Bulk/query export example:
+```
+output-dir/
+├── index.md          # Summary table of all exported issues
+├── PROJ-1/
+│   ├── PROJ-1.md
+│   ├── PROJ-1.json
+│   └── ...
+├── PROJ-2/
+│   ├── PROJ-2.md
+│   ├── PROJ-2.json
+│   └── ...
 └── ...
 ```
 
@@ -138,9 +211,14 @@ key: PROJ-123
 summary: Issue title
 type: Bug
 status: In Progress
+status_category: In Progress
 priority: High
+resolution: null
+project: My Project
+project_key: PROJ
 assignee: John Doe
 reporter: Jane Smith
+creator: Jane Smith
 labels:
   - backend
   - performance
@@ -148,14 +226,33 @@ components:
   - API
   - Database
 parent_key: PROJ-100
-created_at: 2025-01-15T10:30:00.000+0000
-updated_at: 2025-01-20T14:45:00.000+0000
+parent_summary: Parent epic title
+affects_versions:
+  - '1.0'
+fix_versions:
+  - '1.1'
+created_at: '2025-01-15T10:30:00.000+0000'
+updated_at: '2025-01-20T14:45:00.000+0000'
+resolved_at: null
+duedate: '2025-02-01'
+original_estimate: 2d
+time_spent: 1d 4h
+remaining_estimate: 4h
+progress: 60
+aggregate_progress: 45
+votes: 3
+watches: 5
 ---
 ```
 
 ### Markdown Content
 - Issue title with link to Jira
 - Description with preserved formatting
+- Environment section
+- Linked Issues grouped by relationship type
+- Subtasks with status
+- Worklogs table with author, time, and comments
+- Custom Fields section (when present)
 - Comments section with all comments (author, date, and content)
 - Attachments section with all files
 
@@ -169,23 +266,24 @@ Images are embedded inline, other files are linked.
 
 ## Dependencies
 
-- `requests` - HTTP client for API calls
+- `aiohttp` - Async HTTP client for API calls
 - `markdownify` - HTML to Markdown conversion
 - `python-dotenv` - Environment variable management
 - `PyYAML` - YAML frontmatter generation
+- `platformdirs` - XDG-compliant cache directory paths
+- `tomli` - TOML config parsing (Python < 3.11; built-in `tomllib` on 3.11+)
 
 ## Limitations
 
-- Currently supports single issue export only
 - Requires Jira Cloud (not Server/Data Center)
+- Attachment downloads are sequential per issue
 
 ## Future Enhancements
 
-- Export multiple issues with JQL queries
-- Support for bulk export
-- Hierarchical export (epics with stories)
-- Better ADF format handling
-- Custom field support
+- Parallel attachment downloads within a single issue
+- Incremental/delta export (only re-export changed issues)
+- Alternative output formats (HTML, PDF)
+- Hierarchical export (epics with all linked stories)
 
 ## Contributing
 
