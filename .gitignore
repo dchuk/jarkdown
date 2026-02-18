@@ -50,6 +50,10 @@ claude-tmp/
 temp/
 tmp/
 
+# Jira issue output (from test runs)
+TEST-*/
+VERIFICATION.md
+
 # Documentation builds
 docs/_build/
 docs/build/

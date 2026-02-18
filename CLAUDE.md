@@ -73,6 +73,21 @@ ISSUE-KEY/
 - `tests/data/` - JSON fixtures for mocked API responses
 
 All dependencies managed in `pyproject.toml` (no requirements.txt).
+
+### Test Output Directory
+
+When running jarkdown manually against real Jira issues (e.g., for integration testing or debugging), always use `--output ./tmp` to direct output into the `tmp/` directory. This directory is gitignored and prevents test output from polluting the repository root.
+
+```bash
+# Correct: output to tmp/
+jarkdown export TEST-123 --output ./tmp
+jarkdown bulk TEST-1 TEST-2 --output ./tmp
+
+# Wrong: outputs to repo root, creates untracked directories
+jarkdown export TEST-123
+```
+
+Never commit Jira issue output directories (e.g., `TEST-*/`, `PROJ-*/`) to the repository.
 - Never delete any file in the @docs/design/ directory.
 
 ---
