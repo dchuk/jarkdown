@@ -1,0 +1,61 @@
+{
+  "type": "doc",
+  "version": 1,
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {"type": "text", "text": "Thumbs up "},
+        {
+          "type": "emoji",
+          "attrs": {
+            "shortName": ":thumbsup:",
+            "id": "1f44d",
+            "text": "\ud83d\udc4d"
+          }
+        },
+        {"type": "text", "text": " for the update."}
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {"type": "text", "text": "Current status: "},
+        {
+          "type": "status",
+          "attrs": {
+            "text": "IN PROGRESS",
+            "color": "blue",
+            "localId": "abc-123",
+            "style": ""
+          }
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {"type": "text", "text": "Due date: "},
+        {
+          "type": "date",
+          "attrs": {
+            "timestamp": "1672531200000"
+          }
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {"type": "text", "text": "See "},
+        {
+          "type": "inlineCard",
+          "attrs": {
+            "url": "https://example.com/issue/123"
+          }
+        },
+        {"type": "text", "text": " for details."}
+      ]
+    }
+  ]
+}

@@ -491,6 +491,38 @@ class MarkdownConverter:
         elif doc_type == "rule":
             return "---"
 
+        elif doc_type == "emoji":
+            attrs = adf_content.get("attrs", {})
+            short_name = attrs.get("shortName", "")
+            return short_name if short_name else attrs.get("text", "")
+
+        elif doc_type == "status":
+            attrs = adf_content.get("attrs", {})
+            text = attrs.get("text", "")
+            return f"**{text}**"
+
+        elif doc_type == "date":
+            attrs = adf_content.get("attrs", {})
+            timestamp = attrs.get("timestamp", "")
+            if timestamp:
+                from datetime import datetime, timezone
+
+                try:
+                    dt = datetime.fromtimestamp(
+                        int(timestamp) / 1000, tz=timezone.utc
+                    )
+                    return dt.strftime("%Y-%m-%d")
+                except (ValueError, TypeError, OSError):
+                    return str(timestamp)
+            return ""
+
+        elif doc_type == "inlineCard":
+            attrs = adf_content.get("attrs", {})
+            url = attrs.get("url", "")
+            if url:
+                return f"[{url}]({url})"
+            return ""
+
         else:
             # Unknown type - try to process content if it exists
             content = adf_content.get("content", [])
