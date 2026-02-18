@@ -1,0 +1,53 @@
+{
+  "type": "doc",
+  "version": 1,
+  "content": [
+    {
+      "type": "taskList",
+      "attrs": {"localId": "task-list-1"},
+      "content": [
+        {
+          "type": "taskItem",
+          "attrs": {"localId": "task-1", "state": "DONE"},
+          "content": [
+            {"type": "text", "text": "Set up project structure"}
+          ]
+        },
+        {
+          "type": "taskItem",
+          "attrs": {"localId": "task-2", "state": "TODO"},
+          "content": [
+            {"type": "text", "text": "Write unit tests"}
+          ]
+        },
+        {
+          "type": "taskItem",
+          "attrs": {"localId": "task-3", "state": "TODO"},
+          "content": [
+            {"type": "text", "text": "Deploy to staging"}
+          ]
+        }
+      ]
+    },
+    {
+      "type": "decisionList",
+      "attrs": {"localId": "decision-list-1"},
+      "content": [
+        {
+          "type": "decisionItem",
+          "attrs": {"localId": "decision-1", "state": "DECIDED"},
+          "content": [
+            {"type": "text", "text": "Use PostgreSQL for the database"}
+          ]
+        },
+        {
+          "type": "decisionItem",
+          "attrs": {"localId": "decision-2", "state": "DECIDED"},
+          "content": [
+            {"type": "text", "text": "Deploy on AWS ECS"}
+          ]
+        }
+      ]
+    }
+  ]
+}
