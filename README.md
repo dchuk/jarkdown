@@ -23,7 +23,7 @@ Full documentation is available at [jarkdown.readthedocs.io](https://jarkdown.re
 ## Key Features
 
 - **Complete Export:** Fetches all issue metadata, descriptions, comments, and downloads all attachments locally.
-- **Bulk Export:** Export multiple issues concurrently with `jarkdown bulk KEY1 KEY2 --concurrency 5`.
+- **Bulk Export:** Export multiple issues concurrently with configurable parallelism (`--concurrency`, default: 3).
 - **JQL Query Export:** Export issues matching JQL queries with `jarkdown query 'project = FOO AND status = Done'`.
 - **Rich Metadata:** Exports comprehensive YAML frontmatter including project, status category, time tracking, votes, watches, issue links, due dates, and more.
 - **Custom Field Support:** Type-aware rendering of Jira custom fields with configurable include/exclude filtering.
@@ -168,6 +168,21 @@ jarkdown --version
 # Show help
 jarkdown --help
 ```
+
+### CLI Defaults Reference
+
+| Flag | Applies To | Default |
+|------|-----------|---------|
+| `--output` / `-o` | all subcommands | Current working directory |
+| `--concurrency` | `bulk`, `query` | 3 |
+| `--max-results` / `--limit` | `query` | 50 |
+| `--max-results` | `bulk` | No limit (all supplied keys exported) |
+| `--include-json` | all subcommands | Off (not saved) |
+| `--verbose` / `-v` | all subcommands | Off |
+| `--include-fields` | all subcommands | All custom fields included |
+| `--exclude-fields` | all subcommands | No fields excluded |
+| `--refresh-fields` | all subcommands | Off (cache used; auto-refreshes after 24 h) |
+| `--batch-name` | `bulk`, `query` | None (issues written directly to output dir) |
 
 ## Output Structure
 

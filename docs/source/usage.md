@@ -45,7 +45,7 @@ jarkdown export ISSUE-KEY [OPTIONS]
 
 #### `--output` / `-o`
 
-Specify where to save the exported issue:
+Specify where to save the exported issue (default: current directory).
 
 ```bash
 # Save to specific directory
@@ -55,11 +55,11 @@ jarkdown export PROJ-123 --output ~/Documents/jira-exports
 jarkdown export PROJ-123 -o /tmp/exports
 ```
 
-If the output directory doesn't exist, it will be created.
+If no `--output` is given, the issue directory is created inside the current working directory. If the specified output directory doesn't exist, it will be created.
 
 #### `--verbose` / `-v`
 
-Enable detailed output to see what's happening:
+Enable detailed output to see what's happening (default: off).
 
 ```bash
 jarkdown export PROJ-123 --verbose
@@ -73,26 +73,38 @@ This shows:
 
 #### `--include-fields`
 
-Include only specific custom fields in the output:
+Include only specific custom fields in the output (default: all custom fields with non-null values are included).
 
 ```bash
 jarkdown export PROJ-123 --include-fields "Story Points,Sprint,Team"
 ```
 
+When this flag is set, only the listed custom fields appear in the output. Overrides `.jarkdown.toml` include settings.
+
 #### `--exclude-fields`
 
-Exclude specific custom fields from the output:
+Exclude specific custom fields from the output (default: no fields excluded).
 
 ```bash
 jarkdown export PROJ-123 --exclude-fields "Internal Notes,Dev Notes"
 ```
 
+All custom fields except the listed ones are included. Overrides `.jarkdown.toml` exclude settings.
+
 #### `--refresh-fields`
 
-Force a refresh of the cached Jira field metadata:
+Force a refresh of the cached Jira field metadata (default: off; cache is refreshed automatically after 24 hours).
 
 ```bash
 jarkdown export PROJ-123 --refresh-fields
+```
+
+#### `--include-json`
+
+Save the raw Jira API response as `ISSUE-KEY.json` alongside the Markdown file (default: off).
+
+```bash
+jarkdown export PROJ-123 --include-json
 ```
 
 #### `--help` / `-h`
@@ -132,9 +144,13 @@ jarkdown bulk PROJ-1 PROJ-2 PROJ-3 --batch-name sprint-23
 ### Options
 
 - `--concurrency N` - Maximum concurrent exports (default: 3)
-- `--batch-name NAME` - Wrap all issue directories in a named subdirectory
-- `--output` / `-o` - Root output directory
-- `--include-fields`, `--exclude-fields`, `--refresh-fields` - Field filtering (same as export)
+- `--max-results N` - Limit the number of issue keys exported; by default all supplied keys are exported
+- `--batch-name NAME` - Wrap all issue directories in a named subdirectory (default: none)
+- `--output` / `-o` - Root output directory (default: current directory)
+- `--include-json` - Save raw Jira API JSON alongside each Markdown file (default: off)
+- `--verbose` / `-v` - Enable detailed logging (default: off)
+- `--include-fields`, `--exclude-fields` - Comma-separated custom field filter (default: include all)
+- `--refresh-fields` - Force refresh of cached field metadata (default: off)
 
 ### Output
 
@@ -189,8 +205,12 @@ jarkdown query 'project = FOO AND type = Bug' --limit 100 --concurrency 5 --outp
 
 - `--limit N` / `--max-results N` - Maximum number of issues to export (default: 50). Both flags are equivalent; `--limit` is the shorter, more intuitive form. Results are paginated automatically.
 - `--concurrency N` - Maximum concurrent exports (default: 3)
-- `--batch-name NAME` - Wrap all issue directories in a named subdirectory
-- `--output` / `-o` - Root output directory
+- `--batch-name NAME` - Wrap all issue directories in a named subdirectory (default: none)
+- `--output` / `-o` - Root output directory (default: current directory)
+- `--include-json` - Save raw Jira API JSON alongside each Markdown file (default: off)
+- `--verbose` / `-v` - Enable detailed logging (default: off)
+- `--include-fields`, `--exclude-fields` - Comma-separated custom field filter (default: include all)
+- `--refresh-fields` - Force refresh of cached field metadata (default: off)
 
 ### Pagination
 
