@@ -31,3 +31,36 @@ class RetryConfig:
 
 
 DEFAULT_RETRY = RetryConfig()
+
+
+def parse_retry_after(header_value: str) -> float:
+    """Parse a Retry-After header value into seconds to wait.
+
+    Handles both formats:
+    - Integer seconds: "30" → 30.0
+    - HTTP-date: "Mon, 17 Feb 2026 12:00:00 GMT" → seconds until that time
+
+    Args:
+        header_value: Raw Retry-After header string.
+
+    Returns:
+        Number of seconds to wait (minimum 0.0, maximum 300.0).
+    """
+    header_value = header_value.strip()
+
+    # Try integer seconds first
+    try:
+        seconds = float(header_value)
+        return max(0.0, min(seconds, 300.0))
+    except ValueError:
+        pass
+
+    # Try HTTP-date format
+    try:
+        retry_time = parsedate_to_datetime(header_value)
+        now = datetime.now(tz=timezone.utc)
+        wait = (retry_time - now).total_seconds()
+        return max(0.0, min(wait, 300.0))
+    except Exception:
+        # Cannot parse — return default 5 seconds
+        return 5.0
