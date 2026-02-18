@@ -467,6 +467,30 @@ class MarkdownConverter:
                 self._parse_adf_to_markdown(node) for node in content
             ).replace("\n", " ").strip()
 
+        elif doc_type == "panel":
+            attrs = adf_content.get("attrs", {})
+            panel_type = attrs.get("panelType", "info").capitalize()
+            content = adf_content.get("content", [])
+            body = "\n".join(self._parse_adf_to_markdown(node) for node in content)
+            lines = []
+            lines.append(f"> **{panel_type}:**")
+            for line in body.split("\n"):
+                lines.append(f"> {line}" if line else ">")
+            return "\n".join(lines)
+
+        elif doc_type == "expand":
+            attrs = adf_content.get("attrs", {})
+            title = attrs.get("title", "Details")
+            content = adf_content.get("content", [])
+            body = "\n".join(self._parse_adf_to_markdown(node) for node in content)
+            lines = [f"**{title}**", ""]
+            for line in body.split("\n"):
+                lines.append(f"  {line}" if line else "")
+            return "\n".join(lines)
+
+        elif doc_type == "rule":
+            return "---"
+
         else:
             # Unknown type - try to process content if it exists
             content = adf_content.get("content", [])

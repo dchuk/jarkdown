@@ -1,0 +1,51 @@
+{
+  "type": "doc",
+  "version": 1,
+  "content": [
+    {
+      "type": "panel",
+      "attrs": {"panelType": "info"},
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "This is an info panel with important details."}
+          ]
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "attrs": {"panelType": "warning"},
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "Be careful with this operation."}
+          ]
+        }
+      ]
+    },
+    {
+      "type": "expand",
+      "attrs": {"title": "Click to expand"},
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "text", "text": "This content is hidden by default."}
+          ]
+        }
+      ]
+    },
+    {
+      "type": "rule"
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {"type": "text", "text": "Content after the rule."}
+      ]
+    }
+  ]
+}
