@@ -818,6 +818,18 @@ class MarkdownConverter:
 
         lines.append("")
 
+        # Environment section (always present)
+        lines.extend(self._compose_environment_section(issue_data))
+
+        # Linked Issues section (always present)
+        lines.extend(self._compose_linked_issues_section(issue_data))
+
+        # Subtasks section (always present)
+        lines.extend(self._compose_subtasks_section(issue_data))
+
+        # Worklogs section (always present)
+        lines.extend(self._compose_worklogs_section(issue_data))
+
         # Comments section (after description, before attachments)
         comment_lines = self._compose_comments_section(
             issue_data, downloaded_attachments
