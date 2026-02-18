@@ -132,7 +132,7 @@ async def export_issue(api_client, issue_key, output_dir=None,
     # Download attachments
     attachment_handler = AttachmentHandler(api_client)
     attachments = issue_data.get("fields", {}).get("attachment", [])
-    downloaded_attachments = attachment_handler.download_all_attachments(
+    downloaded_attachments = await attachment_handler.download_all_attachments(
         attachments, output_path
     )
 
