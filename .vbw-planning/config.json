@@ -17,10 +17,7 @@
   "active_profile": "default",
   "custom_profiles": {},
   "model_profile": "quality",
-  "model_overrides": {
-    "qa": "opus",
-    "scout": "sonnet"
-  },
+  "model_overrides": {},
   "agent_max_turns": {
     "scout": 15,
     "qa": 25,
