@@ -126,6 +126,63 @@ class JiraApiClient:
         except aiohttp.ClientError as e:
             raise JiraApiError(f"Error fetching field metadata: {e}")
 
+    async def search_jql(self, jql: str, max_results: int = 50) -> list:
+        """Search for issues matching a JQL query, paginating via nextPageToken.
+
+        Args:
+            jql: JQL query string (e.g., 'project = FOO AND status = Done')
+            max_results: Maximum total issues to return across all pages.
+
+        Returns:
+            list: Issue data dicts from Jira API (keys, fields — light-weight summary data)
+
+        Raises:
+            JiraApiError: If any API call fails
+            AuthenticationError: On 401
+        """
+        from .retry import retry_with_backoff, DEFAULT_RETRY
+
+        url = f"{self.api_base}/search/jql"
+        issues = []
+        next_page_token = None
+        page_size = min(max_results, 50)
+
+        while len(issues) < max_results:
+            remaining = max_results - len(issues)
+            params = {
+                "jql": jql,
+                "maxResults": min(remaining, page_size),
+                "fields": "summary,issuetype,status,assignee",
+            }
+            if next_page_token:
+                params["nextPageToken"] = next_page_token
+
+            async def _fetch_page():
+                async with self.session.get(url, params=params) as resp:
+                    resp.raise_for_status()
+                    return await resp.json()
+
+            try:
+                data = await retry_with_backoff(_fetch_page, config=DEFAULT_RETRY)
+            except aiohttp.ClientResponseError as e:
+                if e.status == 401:
+                    raise AuthenticationError(
+                        "Authentication failed during JQL search.",
+                        status_code=401,
+                    )
+                raise JiraApiError(
+                    f"JQL search failed: HTTP {e.status}", status_code=e.status
+                )
+
+            page_issues = data.get("issues", [])
+            issues.extend(page_issues)
+
+            next_page_token = data.get("nextPageToken")
+            if not next_page_token or not page_issues:
+                break
+
+        return issues[:max_results]
+
     def get_attachment_content_url(self, attachment):
         """Get the download URL for an attachment.
 
