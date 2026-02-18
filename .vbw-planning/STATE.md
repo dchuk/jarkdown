@@ -25,6 +25,10 @@
 | .jarkdown.toml + CLI overrides | 2026-02-17 | Config file for defaults, CLI flags for per-run override |
 | Best-effort ADF Markdown | 2026-02-17 | Full node coverage, Markdown-only output |
 | Type-aware + generic fallback rendering | 2026-02-17 | Schema-based dispatch with shape inspection fallback |
+| Subcommand CLI pattern | 2026-02-17 | export/bulk/query subcommands with default-to-export compat |
+| Full async rewrite (aiohttp) | 2026-02-17 | One async code path, concurrent bulk with semaphore |
+| Continue-and-report on partial failures | 2026-02-17 | Retry transient, fail and record unrecoverable |
+| Flat sibling output with optional batch dir | 2026-02-17 | Reuses existing per-issue structure, index.md summary |
 
 ## Todos
 None.
@@ -36,6 +40,7 @@ None.
 **Registry available:** yes
 
 ## Recent Activity
+- 2026-02-17: Phase 4 discussed (4 design decisions captured)
 - 2026-02-17: Phase 3 complete (3/3 plans, 187 tests, QA PASS 40/40)
 - 2026-02-17: Phase 3 executed (Wave 1: 3 parallel devs, 9 commits)
 - 2026-02-17: Phase 3 planned (3 plans, 10 tasks, 1 wave)
