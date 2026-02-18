@@ -1,13 +1,15 @@
 """Jira API client for handling all communication with Jira Cloud REST API."""
 
+import asyncio
 import logging
-import requests
+
+import aiohttp
 
 from .exceptions import JiraApiError, AuthenticationError, IssueNotFoundError
 
 
 class JiraApiClient:
-    """Handles all communication with the Jira Cloud REST API."""
+    """Handles all communication with the Jira Cloud REST API using async aiohttp."""
 
     def __init__(self, domain, email, api_token):
         """Initialize the Jira API client.
@@ -22,16 +24,33 @@ class JiraApiClient:
         self.api_token = api_token
         self.base_url = f"https://{domain}"
         self.api_base = f"{self.base_url}/rest/api/3"
-
-        self.session = requests.Session()
-        self.session.auth = (email, api_token)
-        self.session.headers.update(
-            {"Accept": "application/json", "Content-Type": "application/json"}
-        )
+        self.session = None
 
         self.logger = logging.getLogger(__name__)
 
-    def fetch_issue(self, issue_key):
+    async def __aenter__(self):
+        """Create aiohttp session with connection pooling and auth.
+
+        Returns:
+            JiraApiClient: Self with active session
+        """
+        connector = aiohttp.TCPConnector(limit_per_host=5)
+        auth = aiohttp.BasicAuth(self.email, self.api_token)
+        timeout = aiohttp.ClientTimeout(total=30)
+        self.session = aiohttp.ClientSession(
+            connector=connector,
+            auth=auth,
+            timeout=timeout,
+            headers={"Accept": "application/json", "Content-Type": "application/json"},
+        )
+        return self
+
+    async def __aexit__(self, *args):
+        """Close session with SSL cleanup delay."""
+        await self.session.close()
+        await asyncio.sleep(0.250)  # SSL cleanup per research
+
+    async def fetch_issue(self, issue_key):
         """Fetch issue data from Jira API.
 
         Args:
@@ -51,32 +70,61 @@ class JiraApiClient:
         self.logger.info(f"Fetching issue {issue_key}...")
 
         try:
-            response = self.session.get(url, params=params)
+            response = await self.session.get(url, params=params)
             response.raise_for_status()
-            return response.json()
+            return await response.json()
 
-        except requests.exceptions.HTTPError as e:
-            if response.status_code == 401:
+        except aiohttp.ClientResponseError as e:
+            if e.status == 401:
                 raise AuthenticationError(
                     "Authentication failed. Please check your API token and email.",
                     status_code=401,
-                    response=response,
                 )
-            elif response.status_code == 404:
+            elif e.status == 404:
                 raise IssueNotFoundError(
                     f"Issue {issue_key} not found or not accessible.",
                     status_code=404,
-                    response=response,
                 )
             else:
                 raise JiraApiError(
                     f"HTTP error occurred: {e}",
-                    status_code=response.status_code,
-                    response=response,
+                    status_code=e.status,
                 )
 
-        except requests.exceptions.RequestException as e:
+        except aiohttp.ClientError as e:
             raise JiraApiError(f"Error fetching issue: {e}")
+
+    async def fetch_fields(self):
+        """Fetch all field definitions from Jira.
+
+        Returns:
+            list: List of field definition dicts with id, name, schema keys.
+
+        Raises:
+            AuthenticationError: If authentication fails
+            JiraApiError: If the API call fails.
+        """
+        url = f"{self.api_base}/field"
+        self.logger.info("Fetching field metadata...")
+
+        try:
+            response = await self.session.get(url)
+            response.raise_for_status()
+            return await response.json()
+
+        except aiohttp.ClientResponseError as e:
+            if e.status == 401:
+                raise AuthenticationError(
+                    "Authentication failed while fetching field metadata.",
+                    status_code=401,
+                )
+            raise JiraApiError(
+                f"Error fetching field metadata: {e}",
+                status_code=e.status,
+            )
+
+        except aiohttp.ClientError as e:
+            raise JiraApiError(f"Error fetching field metadata: {e}")
 
     def get_attachment_content_url(self, attachment):
         """Get the download URL for an attachment.
@@ -89,52 +137,23 @@ class JiraApiClient:
         """
         return attachment.get("content", "")
 
-    def download_attachment_stream(self, content_url):
+    async def download_attachment_stream(self, content_url):
         """Stream download an attachment.
 
         Args:
             content_url: The URL to download the attachment from
 
         Returns:
-            requests.Response: Streaming response object
+            aiohttp.ClientResponse: Active response object for streaming
 
         Raises:
             JiraApiError: If download fails
         """
         try:
-            response = self.session.get(content_url, stream=True)
+            response = await self.session.get(content_url)
             response.raise_for_status()
             return response
-        except requests.exceptions.RequestException as e:
+        except aiohttp.ClientResponseError as e:
+            raise JiraApiError(f"Error downloading attachment: HTTP {e.status}")
+        except aiohttp.ClientError as e:
             raise JiraApiError(f"Error downloading attachment: {e}")
-
-    def fetch_fields(self):
-        """Fetch all field definitions from Jira.
-
-        Returns:
-            list: List of field definition dicts with id, name, schema keys.
-
-        Raises:
-            JiraApiError: If the API call fails.
-        """
-        url = f"{self.api_base}/field"
-        self.logger.info("Fetching field metadata...")
-
-        try:
-            response = self.session.get(url)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.HTTPError as e:
-            if response.status_code == 401:
-                raise AuthenticationError(
-                    "Authentication failed while fetching field metadata.",
-                    status_code=401,
-                    response=response,
-                )
-            raise JiraApiError(
-                f"Error fetching field metadata: {e}",
-                status_code=response.status_code,
-                response=response,
-            )
-        except requests.exceptions.RequestException as e:
-            raise JiraApiError(f"Error fetching field metadata: {e}")
