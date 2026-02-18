@@ -107,3 +107,34 @@ class JiraApiClient:
             return response
         except requests.exceptions.RequestException as e:
             raise JiraApiError(f"Error downloading attachment: {e}")
+
+    def fetch_fields(self):
+        """Fetch all field definitions from Jira.
+
+        Returns:
+            list: List of field definition dicts with id, name, schema keys.
+
+        Raises:
+            JiraApiError: If the API call fails.
+        """
+        url = f"{self.api_base}/field"
+        self.logger.info("Fetching field metadata...")
+
+        try:
+            response = self.session.get(url)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as e:
+            if response.status_code == 401:
+                raise AuthenticationError(
+                    "Authentication failed while fetching field metadata.",
+                    status_code=401,
+                    response=response,
+                )
+            raise JiraApiError(
+                f"Error fetching field metadata: {e}",
+                status_code=response.status_code,
+                response=response,
+            )
+        except requests.exceptions.RequestException as e:
+            raise JiraApiError(f"Error fetching field metadata: {e}")
