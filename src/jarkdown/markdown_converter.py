@@ -434,6 +434,39 @@ class MarkdownConverter:
         elif doc_type == "hardBreak":
             return "\n"
 
+        elif doc_type == "table":
+            content = adf_content.get("content", [])
+            rows = []
+            for i, row_node in enumerate(content):
+                cells = row_node.get("content", [])
+                cell_texts = []
+                for cell in cells:
+                    cell_content = cell.get("content", [])
+                    text = " ".join(
+                        self._parse_adf_to_markdown(node) for node in cell_content
+                    ).replace("\n", " ").strip()
+                    cell_texts.append(text)
+                rows.append("| " + " | ".join(cell_texts) + " |")
+                if i == 0:
+                    rows.append("| " + " | ".join("---" for _ in cell_texts) + " |")
+            return "\n".join(rows)
+
+        elif doc_type in ("tableRow", "tableHeader"):
+            # Handled inline by table parser
+            content = adf_content.get("content", [])
+            return " | ".join(
+                " ".join(
+                    self._parse_adf_to_markdown(n) for n in cell.get("content", [])
+                ).replace("\n", " ").strip()
+                for cell in content
+            )
+
+        elif doc_type == "tableCell":
+            content = adf_content.get("content", [])
+            return " ".join(
+                self._parse_adf_to_markdown(node) for node in content
+            ).replace("\n", " ").strip()
+
         else:
             # Unknown type - try to process content if it exists
             content = adf_content.get("content", [])
