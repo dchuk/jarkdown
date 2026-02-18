@@ -1,0 +1,87 @@
+{
+  "answered": [
+    {
+      "question": "How should multiple keys and JQL coexist with the existing single-key positional arg?",
+      "answer": "Subcommand pattern: export, bulk, query, setup. Default-to-export compat shim for bare jarkdown PROJ-123.",
+      "area": "cli-argument-design",
+      "phase": "04",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "How should backward compatibility be handled for the breaking CLI change?",
+      "answer": "Default subcommand: if no subcommand given and args match issue key pattern, assume 'export'. Both syntaxes work.",
+      "area": "cli-argument-design",
+      "phase": "04",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "Should bulk/query share all existing flags with export?",
+      "answer": "Yes, parent-level shared flags inherited by all subcommands. query adds --max-results.",
+      "area": "cli-argument-design",
+      "phase": "04",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "What should the directory layout look like for bulk/query exports?",
+      "answer": "Flat siblings by default (reuse existing per-issue directories). Optional --batch-name for named wrapper directory. index.md summary at root.",
+      "area": "bulk-output-structure",
+      "phase": "04",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "What should the index.md summary contain?",
+      "answer": "Markdown table with key (linked), summary, status, type, assignee. Header with export count and date.",
+      "area": "bulk-output-structure",
+      "phase": "04",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "How should bulk export handle API throughput and Jira rate limits?",
+      "answer": "Full async rewrite: aiohttp replaces requests, asyncio.Semaphore with default 3 concurrent workers. Respect Retry-After headers.",
+      "area": "rate-limiting-concurrency",
+      "phase": "04",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "Should async be everywhere or only for bulk/query?",
+      "answer": "Async everywhere. Single export also uses asyncio.run() at CLI boundary. One code path, not two.",
+      "area": "rate-limiting-concurrency",
+      "phase": "04",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "What happens when some issues fail during bulk export?",
+      "answer": "Continue and report. Retry transient errors (rate limit, timeout) with backoff. Fail and record unrecoverable errors (404, auth). Exit code 1 if any failures.",
+      "area": "partial-failure-semantics",
+      "phase": "04",
+      "date": "2026-02-17"
+    }
+  ],
+  "inferred": [
+    {
+      "id": "REQ-09",
+      "text": "Bulk export via subcommand pattern with concurrent async execution",
+      "priority": "Must-have",
+      "source": "Discussion: CLI design + rate limiting"
+    },
+    {
+      "id": "REQ-10",
+      "text": "JQL query support via 'query' subcommand with pagination",
+      "priority": "Must-have",
+      "source": "Discussion: CLI design"
+    },
+    {
+      "id": "IMPL-01",
+      "text": "aiohttp replaces requests as the HTTP client library",
+      "priority": "Must-have",
+      "source": "Discussion: rate limiting & concurrency"
+    },
+    {
+      "id": "IMPL-02",
+      "text": "New dependency: aiohttp added to pyproject.toml",
+      "priority": "Must-have",
+      "source": "Discussion: full async rewrite"
+    }
+  ],
+  "deferred": []
+}
