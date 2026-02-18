@@ -691,6 +691,73 @@ class MarkdownConverter:
             parts.append(f"{minutes}m")
         return " ".join(parts) if parts else "0m"
 
+    def _compose_custom_fields_section(self, issue_data, field_cache=None, field_filter=None):
+        """Compose the custom fields section of the markdown.
+
+        Args:
+            issue_data: Raw issue data from Jira API
+            field_cache: FieldMetadataCache instance for name resolution, or None.
+            field_filter: Dict with 'include'/'exclude' keys from ConfigManager, or None.
+
+        Returns:
+            list: Lines of markdown content for custom fields section, or empty list.
+        """
+        from .custom_field_renderer import CustomFieldRenderer
+
+        fields = issue_data.get("fields", {})
+
+        # Collect custom fields with non-null values
+        custom_fields = {}
+        for key, value in fields.items():
+            if not key.startswith("customfield_"):
+                continue
+            if value is None:
+                continue
+
+            # Resolve display name
+            if field_cache:
+                display_name = field_cache.get_field_name(key)
+            else:
+                display_name = key
+
+            # Apply field filter
+            if field_filter:
+                if display_name in field_filter.get("exclude", set()):
+                    continue
+                include_set = field_filter.get("include")
+                if include_set is not None and display_name not in include_set:
+                    continue
+
+            custom_fields[display_name] = (key, value)
+
+        if not custom_fields:
+            return []
+
+        # Sort alphabetically by display name
+        sorted_fields = sorted(custom_fields.items(), key=lambda x: x[0].lower())
+
+        # Render values
+        renderer = CustomFieldRenderer(adf_parser=self._parse_adf_to_markdown)
+
+        lines = ["## Custom Fields", ""]
+        for display_name, (field_id, value) in sorted_fields:
+            schema = field_cache.get_field_schema(field_id) if field_cache else None
+            rendered = renderer.render_value(value, schema)
+            if rendered is None:
+                continue
+
+            # Multi-line values (e.g., ADF content) get their own block
+            if "\n" in rendered:
+                lines.append(f"### {display_name}")
+                lines.append("")
+                lines.append(rendered)
+                lines.append("")
+            else:
+                lines.append(f"- **{display_name}:** {rendered}")
+
+        lines.append("")
+        return lines
+
     def _compose_comments_section(self, issue_data, downloaded_attachments):
         """Compose the comments section of the markdown.
 
@@ -878,12 +945,14 @@ class MarkdownConverter:
 
         return metadata
 
-    def compose_markdown(self, issue_data, downloaded_attachments):
+    def compose_markdown(self, issue_data, downloaded_attachments, field_cache=None, field_filter=None):
         """Compose the final markdown file content.
 
         Args:
             issue_data: Raw issue data from Jira API
             downloaded_attachments: List of downloaded attachment info
+            field_cache: FieldMetadataCache instance for custom field name resolution, or None.
+            field_filter: Dict with 'include'/'exclude' keys from ConfigManager, or None.
 
         Returns:
             str: Complete markdown content for the issue
@@ -951,6 +1020,13 @@ class MarkdownConverter:
 
         # Worklogs section (always present)
         lines.extend(self._compose_worklogs_section(issue_data))
+
+        # Custom Fields section (only if custom fields present)
+        custom_field_lines = self._compose_custom_fields_section(
+            issue_data, field_cache=field_cache, field_filter=field_filter
+        )
+        if custom_field_lines:
+            lines.extend(custom_field_lines)
 
         # Comments section (after description, before attachments)
         comment_lines = self._compose_comments_section(
