@@ -1,0 +1,46 @@
+{
+  "answered": [
+    {
+      "id": "uv-adoption-depth",
+      "question": "How deep should the uv migration go?",
+      "answer": "Full uv — replace setuptools build backend, use uv in CI, uv for publish, drop pip entirely",
+      "impact": "high"
+    },
+    {
+      "id": "end-user-install",
+      "question": "How should end users install jarkdown?",
+      "answer": "All three paths: uv tool install (primary), pipx install (alternative), pip install (fallback)",
+      "impact": "medium"
+    },
+    {
+      "id": "lock-file-strategy",
+      "question": "Should uv.lock be committed to the repository?",
+      "answer": "Yes — commit uv.lock for reproducible dev and CI environments",
+      "impact": "medium"
+    },
+    {
+      "id": "ci-cd-changes",
+      "question": "How aggressive should the CI migration be?",
+      "answer": "Full replacement — all CI jobs use uv, uv build for publishing, uv run for commands, drop pip caching",
+      "impact": "high"
+    }
+  ],
+  "inferred": [
+    {
+      "id": "pre-commit-unchanged",
+      "assumption": "Pre-commit hooks (ruff) remain unchanged",
+      "confidence": "high"
+    },
+    {
+      "id": "python-version-unchanged",
+      "assumption": "Python >=3.8 minimum version stays",
+      "confidence": "high"
+    },
+    {
+      "id": "trusted-publishing-continues",
+      "assumption": "PyPI trusted publishing (OIDC) must continue working",
+      "confidence": "high"
+    }
+  ],
+  "deferred": []
+}
