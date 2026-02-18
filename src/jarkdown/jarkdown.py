@@ -92,13 +92,17 @@ def setup_configuration():
         sys.exit(1)
 
 
-def export_issue(api_client, issue_key, output_dir=None):
+def export_issue(api_client, issue_key, output_dir=None,
+                 refresh_fields=False, include_fields=None, exclude_fields=None):
     """Export a Jira issue to markdown.
 
     Args:
         api_client: JiraApiClient instance
         issue_key: Jira issue key (e.g., 'PROJ-123')
         output_dir: Optional output directory
+        refresh_fields: Force refresh of cached field metadata
+        include_fields: Comma-separated custom field names to include
+        exclude_fields: Comma-separated custom field names to exclude
 
     Returns:
         Path: The output directory where files were saved
@@ -128,8 +132,23 @@ def export_issue(api_client, issue_key, output_dir=None):
 
     # Convert to markdown
     markdown_converter = MarkdownConverter(api_client.base_url, api_client.domain)
+
+    # Set up field metadata cache and config
+    from .field_cache import FieldMetadataCache
+    from .config_manager import ConfigManager
+
+    field_cache = FieldMetadataCache(api_client.domain)
+    field_cache.refresh(api_client, force=refresh_fields)
+
+    config_manager = ConfigManager()
+    field_filter = config_manager.get_field_filter(
+        cli_include=include_fields,
+        cli_exclude=exclude_fields,
+    )
+
     markdown_content = markdown_converter.compose_markdown(
-        issue_data, downloaded_attachments
+        issue_data, downloaded_attachments,
+        field_cache=field_cache, field_filter=field_filter,
     )
 
     # Write markdown file
@@ -253,7 +272,12 @@ Environment variables:
             print("Or add the missing variables to your .env file.")
             sys.exit(1)
         api_client = JiraApiClient(domain, email, api_token)
-        export_issue(api_client, args.issue_key, args.output)
+        export_issue(
+            api_client, args.issue_key, args.output,
+            refresh_fields=getattr(args, 'refresh_fields', False),
+            include_fields=getattr(args, 'include_fields', None),
+            exclude_fields=getattr(args, 'exclude_fields', None),
+        )
 
     except JarkdownError as e:
         # Catch all JarkdownError subclasses with a single handler
