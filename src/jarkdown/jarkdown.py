@@ -6,6 +6,7 @@ This tool exports a Jira Cloud issue into a markdown file with all its attachmen
 downloaded locally and referenced inline.
 """
 
+import json
 import os
 import sys
 import argparse
@@ -151,12 +152,18 @@ def export_issue(api_client, issue_key, output_dir=None,
         field_cache=field_cache, field_filter=field_filter,
     )
 
+    # Write raw JSON response
+    json_file = output_path / f"{issue_key}.json"
+    with open(json_file, "w", encoding="utf-8") as f:
+        json.dump(issue_data, f, indent=2, ensure_ascii=False)
+
     # Write markdown file
     markdown_file = output_path / f"{issue_key}.md"
     with open(markdown_file, "w", encoding="utf-8") as f:
         f.write(markdown_content)
 
     logger.info(f"\nSuccessfully exported {issue_key} to {output_path}")
+    logger.info(f"  - Raw JSON: {json_file}")
     logger.info(f"  - Markdown file: {markdown_file}")
     if downloaded_attachments:
         logger.info(f"  - Downloaded {len(downloaded_attachments)} attachment(s)")
