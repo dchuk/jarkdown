@@ -41,6 +41,34 @@
       "area": "empty-field-handling",
       "phase": "01",
       "date": "2026-02-17"
+    },
+    {
+      "question": "How should custom field IDs be resolved to display names?",
+      "answer": "Cached field metadata in ~/.config/jarkdown/ per domain, 24h TTL with timestamp in filename. Degrade to raw IDs with warning if stale and API unreachable.",
+      "area": "custom-field-discovery",
+      "phase": "02",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "What should the default behavior for custom fields be?",
+      "answer": "Include all custom fields with non-null values by default. .jarkdown.toml config for persistent include/exclude lists. CLI --include-fields/--exclude-fields for per-run overrides.",
+      "area": "custom-field-selection",
+      "phase": "02",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "Which ADF nodes should be covered in Phase 2?",
+      "answer": "Full coverage: table, panel, expand, emoji, inlineCard, taskList/taskItem, decisionList/decisionItem, status, date, rule. Best-effort Markdown only, no HTML fallbacks.",
+      "area": "adf-coverage",
+      "phase": "02",
+      "date": "2026-02-17"
+    },
+    {
+      "question": "How should custom field types be rendered?",
+      "answer": "Type-aware via metadata (select->value, user->displayName, date->formatted, list->comma-join). Generic fallback via value shape inspection. All in ## Custom Fields body section.",
+      "area": "custom-field-rendering",
+      "phase": "02",
+      "date": "2026-02-17"
     }
   ],
   "inferred": [
@@ -49,6 +77,18 @@
       "text": "Full standard field coverage with complete schema — all fields always present in output",
       "priority": "Must-have",
       "source": "Discussion: empty-field-handling"
+    },
+    {
+      "id": "REQ-07",
+      "text": "Custom field rendering with cached metadata, TOML config, and CLI overrides",
+      "priority": "Must-have",
+      "source": "Discussion: custom-field-discovery, custom-field-selection, custom-field-rendering"
+    },
+    {
+      "id": "REQ-08",
+      "text": "Complete ADF support — all node types with best-effort Markdown rendering, no HTML",
+      "priority": "Must-have",
+      "source": "Discussion: adf-coverage"
     }
   ],
   "deferred": []
