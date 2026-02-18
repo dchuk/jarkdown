@@ -79,9 +79,9 @@ All dependencies managed in `pyproject.toml` (no requirements.txt).
 
 ## State
 - Planning directory: `.vbw-planning/`
-- Milestone: jarkdown (4 phases)
-- Current Phase: Phase 1 — Standard Field Coverage
-- Status: Pending planning
+- Milestone: jarkdown (4 phases) — SHIPPED 2026-02-18
+- Archive: `.vbw-planning/milestones/jarkdown/`
+- Tag: `milestone/jarkdown`
 
 ## VBW Rules
 
@@ -97,6 +97,10 @@ All dependencies managed in `pyproject.toml` (no requirements.txt).
 
 | Decision | Date | Rationale |
 |----------|------|-----------|
+| Full async (aiohttp) | 2026-02-17 | One code path, concurrent bulk with semaphore |
+| Subcommand CLI | 2026-02-17 | export/bulk/query/setup with backward compat |
+| Continue-and-report | 2026-02-17 | Retry transient, fail and record unrecoverable |
+| Flat sibling output | 2026-02-17 | Reuses per-issue structure, index.md summary |
 
 ## Installed Skills
 - python-testing-patterns (global)
