@@ -22,6 +22,7 @@ from dotenv import load_dotenv
 from .jira_api_client import JiraApiClient
 from .attachment_handler import AttachmentHandler
 from .markdown_converter import MarkdownConverter
+from .bulk_exporter import BulkExporter
 from .exceptions import (
     JarkdownError,
 )
@@ -202,6 +203,71 @@ async def _async_export(args, domain, email, api_token):
         )
 
 
+def _load_credentials():
+    """Load and validate Jira credentials from environment variables.
+
+    Returns:
+        tuple: (domain, email, api_token) strings
+
+    Exits:
+        sys.exit(1) if credentials are missing or .env file not found
+    """
+    load_dotenv()
+
+    domain = os.getenv("JIRA_DOMAIN")
+    email = os.getenv("JIRA_EMAIL")
+    api_token = os.getenv("JIRA_API_TOKEN")
+
+    # Check if .env file exists and no environment variables are set
+    env_path = Path.cwd() / ".env"
+    if not env_path.exists() and not all([domain, email, api_token]):
+        print("Error: Configuration file '.env' not found.")
+        print("\nTo set up your configuration, run: jarkdown setup")
+        print("Or create a .env file manually with:")
+        print("  JIRA_DOMAIN=your-company.atlassian.net")
+        print("  JIRA_EMAIL=your-email@example.com")
+        print("  JIRA_API_TOKEN=your-api-token")
+        sys.exit(1)
+
+    # Validate credentials with helpful error messages
+    missing = []
+    if not domain:
+        missing.append("JIRA_DOMAIN")
+    if not email:
+        missing.append("JIRA_EMAIL")
+    if not api_token:
+        missing.append("JIRA_API_TOKEN")
+
+    if missing:
+        print(
+            f"Error: Missing required environment variables: {', '.join(missing)}"
+        )
+        print("\nTo set up your configuration, run: jarkdown setup")
+        print("Or add the missing variables to your .env file.")
+        sys.exit(1)
+
+    return domain, email, api_token
+
+
+def _print_summary(successes, failures):
+    """Print a completion summary to stderr.
+
+    Args:
+        successes: List of successful ExportResult instances
+        failures: List of failed ExportResult instances
+    """
+    total = len(successes) + len(failures)
+    print(
+        f"\nExport complete: {len(successes)}/{total} succeeded, "
+        f"{len(failures)} failed.",
+        file=sys.stderr,
+    )
+    if failures:
+        print("\nFailed issues:", file=sys.stderr)
+        for result in failures:
+            print(f"  {result.issue_key}: {result.error}", file=sys.stderr)
+
+
 def _handle_export(args):
     """Handle the export subcommand: validate env then run async export.
 
@@ -214,43 +280,8 @@ def _handle_export(args):
         format="%(levelname)s: %(message)s",
     )
 
-    # Load environment variables
-    load_dotenv()
-
     try:
-        # Get credentials from environment
-        domain = os.getenv("JIRA_DOMAIN")
-        email = os.getenv("JIRA_EMAIL")
-        api_token = os.getenv("JIRA_API_TOKEN")
-
-        # Check if .env file exists and no environment variables are set
-        env_path = Path.cwd() / ".env"
-        if not env_path.exists() and not all([domain, email, api_token]):
-            print("Error: Configuration file '.env' not found.")
-            print("\nTo set up your configuration, run: jarkdown setup")
-            print("Or create a .env file manually with:")
-            print("  JIRA_DOMAIN=your-company.atlassian.net")
-            print("  JIRA_EMAIL=your-email@example.com")
-            print("  JIRA_API_TOKEN=your-api-token")
-            sys.exit(1)
-
-        # Validate credentials with helpful error messages
-        missing = []
-        if not domain:
-            missing.append("JIRA_DOMAIN")
-        if not email:
-            missing.append("JIRA_EMAIL")
-        if not api_token:
-            missing.append("JIRA_API_TOKEN")
-
-        if missing:
-            print(
-                f"Error: Missing required environment variables: {', '.join(missing)}"
-            )
-            print("\nTo set up your configuration, run: jarkdown setup")
-            print("Or add the missing variables to your .env file.")
-            sys.exit(1)
-
+        domain, email, api_token = _load_credentials()
         asyncio.run(_async_export(args, domain, email, api_token))
 
     except JarkdownError as e:
@@ -266,23 +297,104 @@ def _handle_export(args):
 
 
 def _handle_bulk(args):
-    """Handle bulk subcommand (stub — Plan 04 wires real implementation).
+    """Handle 'bulk' subcommand: export multiple issues by key.
+
+    Args:
+        args: Parsed CLI arguments with issue_keys and shared flags
+    """
+    try:
+        domain, email, api_token = _load_credentials()
+        asyncio.run(_async_bulk(args, domain, email, api_token))
+    except JarkdownError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print("\nOperation cancelled by user", file=sys.stderr)
+        sys.exit(1)
+    except SystemExit:
+        raise
+    except Exception as e:
+        print(f"Unexpected error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+async def _async_bulk(args, domain, email, api_token):
+    """Async implementation of bulk subcommand.
 
     Args:
         args: Parsed CLI arguments
+        domain: Jira domain from environment
+        email: Jira email from environment
+        api_token: Jira API token from environment
     """
-    print("bulk export: not yet implemented", file=sys.stderr)
-    sys.exit(0)
+    async with JiraApiClient(domain, email, api_token) as client:
+        exporter = BulkExporter(
+            client,
+            concurrency=args.concurrency,
+            output_dir=args.output,
+            batch_name=getattr(args, "batch_name", None),
+            refresh_fields=getattr(args, "refresh_fields", False),
+            include_fields=getattr(args, "include_fields", None),
+            exclude_fields=getattr(args, "exclude_fields", None),
+        )
+        successes, failures = await exporter.export_bulk(args.issue_keys)
+        await exporter.write_index_md(successes + failures, {})
+        _print_summary(successes, failures)
+        if failures:
+            sys.exit(1)
 
 
 def _handle_query(args):
-    """Handle query subcommand (stub — Plan 04 wires real implementation).
+    """Handle 'query' subcommand: export issues from JQL.
+
+    Args:
+        args: Parsed CLI arguments with jql and shared flags
+    """
+    try:
+        domain, email, api_token = _load_credentials()
+        asyncio.run(_async_query(args, domain, email, api_token))
+    except JarkdownError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print("\nOperation cancelled by user", file=sys.stderr)
+        sys.exit(1)
+    except SystemExit:
+        raise
+    except Exception as e:
+        print(f"Unexpected error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+async def _async_query(args, domain, email, api_token):
+    """Async implementation of query subcommand.
 
     Args:
         args: Parsed CLI arguments
+        domain: Jira domain from environment
+        email: Jira email from environment
+        api_token: Jira API token from environment
     """
-    print("query export: not yet implemented", file=sys.stderr)
-    sys.exit(0)
+    async with JiraApiClient(domain, email, api_token) as client:
+        print(f"Searching: {args.jql}", file=sys.stderr)
+        issues = await client.search_jql(args.jql, max_results=args.max_results)
+        if not issues:
+            print("No issues found.", file=sys.stderr)
+            return
+        issue_keys = [i["key"] for i in issues]
+        print(f"Found {len(issue_keys)} issues.", file=sys.stderr)
+        exporter = BulkExporter(
+            client,
+            concurrency=args.concurrency,
+            output_dir=args.output,
+            batch_name=getattr(args, "batch_name", None),
+        )
+        successes, failures = await exporter.export_bulk(issue_keys)
+        issues_data = {i["key"]: i for i in issues}
+        await exporter.write_index_md(successes + failures, issues_data)
+        _print_summary(successes, failures)
+        if failures:
+            sys.exit(1)
 
 
 def main():
