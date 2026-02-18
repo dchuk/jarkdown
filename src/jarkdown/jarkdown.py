@@ -99,7 +99,8 @@ def setup_configuration():
 
 
 async def export_issue(api_client, issue_key, output_dir=None,
-                       refresh_fields=False, include_fields=None, exclude_fields=None):
+                       refresh_fields=False, include_fields=None, exclude_fields=None,
+                       include_json=False):
     """Export a Jira issue to markdown.
 
     Args:
@@ -109,6 +110,7 @@ async def export_issue(api_client, issue_key, output_dir=None,
         refresh_fields: Force refresh of cached field metadata
         include_fields: Comma-separated custom field names to include
         exclude_fields: Comma-separated custom field names to exclude
+        include_json: Write raw JSON response alongside the markdown file
 
     Returns:
         Path: The output directory where files were saved
@@ -164,10 +166,11 @@ async def export_issue(api_client, issue_key, output_dir=None,
         field_cache=field_cache, field_filter=field_filter,
     )
 
-    # Write raw JSON response
-    json_file = output_path / f"{issue_key}.json"
-    with open(json_file, "w", encoding="utf-8") as f:
-        json.dump(issue_data, f, indent=2, ensure_ascii=False)
+    # Write raw JSON response (opt-in)
+    if include_json:
+        json_file = output_path / f"{issue_key}.json"
+        with open(json_file, "w", encoding="utf-8") as f:
+            json.dump(issue_data, f, indent=2, ensure_ascii=False)
 
     # Write markdown file
     markdown_file = output_path / f"{issue_key}.md"
@@ -175,7 +178,9 @@ async def export_issue(api_client, issue_key, output_dir=None,
         f.write(markdown_content)
 
     logger.info(f"\nSuccessfully exported {issue_key} to {output_path}")
-    logger.info(f"  - Raw JSON: {json_file}")
+    if include_json:
+        json_file = output_path / f"{issue_key}.json"
+        logger.info(f"  - Raw JSON: {json_file}")
     logger.info(f"  - Markdown file: {markdown_file}")
     if downloaded_attachments:
         logger.info(f"  - Downloaded {len(downloaded_attachments)} attachment(s)")
@@ -200,6 +205,7 @@ async def _async_export(args, domain, email, api_token):
             refresh_fields=getattr(args, "refresh_fields", False),
             include_fields=getattr(args, "include_fields", None),
             exclude_fields=getattr(args, "exclude_fields", None),
+            include_json=getattr(args, "include_json", False),
         )
 
 
@@ -336,6 +342,7 @@ async def _async_bulk(args, domain, email, api_token):
             refresh_fields=getattr(args, "refresh_fields", False),
             include_fields=getattr(args, "include_fields", None),
             exclude_fields=getattr(args, "exclude_fields", None),
+            include_json=getattr(args, "include_json", False),
         )
         successes, failures = await exporter.export_bulk(args.issue_keys)
         await exporter.write_index_md(successes + failures, {})
@@ -388,6 +395,7 @@ async def _async_query(args, domain, email, api_token):
             concurrency=args.concurrency,
             output_dir=args.output,
             batch_name=getattr(args, "batch_name", None),
+            include_json=getattr(args, "include_json", False),
         )
         successes, failures = await exporter.export_bulk(issue_keys)
         issues_data = {i["key"]: i for i in issues}
@@ -423,6 +431,12 @@ def main():
     parent_parser.add_argument(
         "--exclude-fields",
         help="Comma-separated list of custom field names to exclude",
+    )
+    parent_parser.add_argument(
+        "--include-json",
+        action="store_true",
+        default=False,
+        help="Save the raw Jira API JSON response alongside the Markdown file",
     )
 
     # Main parser

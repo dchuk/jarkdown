@@ -172,16 +172,22 @@ jarkdown --help
 
 The tool creates a directory named after the issue key containing:
 - A markdown file with the issue content
-- A JSON file with the raw API response
 - All attachments downloaded from the issue
 
 Single issue example:
 ```
 PROJ-123/
 ├── PROJ-123.md       # Issue content in markdown
-├── PROJ-123.json     # Raw Jira API response
 ├── diagram.png       # Downloaded attachments
 ├── report.pdf
+└── ...
+```
+
+Pass `--include-json` to also save the raw Jira API response:
+```
+PROJ-123/
+├── PROJ-123.md
+├── PROJ-123.json     # Raw Jira API response (opt-in)
 └── ...
 ```
 
@@ -191,11 +197,9 @@ output-dir/
 ├── index.md          # Summary table of all exported issues
 ├── PROJ-1/
 │   ├── PROJ-1.md
-│   ├── PROJ-1.json
 │   └── ...
 ├── PROJ-2/
 │   ├── PROJ-2.md
-│   ├── PROJ-2.json
 │   └── ...
 └── ...
 ```

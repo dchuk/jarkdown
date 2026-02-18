@@ -18,8 +18,9 @@ jarkdown PROJ-123
 
 This creates a folder named `PROJ-123/` in your current directory containing:
 - `PROJ-123.md` - The issue content in Markdown
-- `PROJ-123.json` - The raw Jira API response
 - All attachments with their original filenames
+
+Pass `--include-json` to also save the raw Jira API response as `PROJ-123.json`.
 
 ## Subcommands
 
@@ -144,11 +145,9 @@ output-dir/
 ├── index.md          # Summary table with status of each export
 ├── PROJ-1/
 │   ├── PROJ-1.md
-│   ├── PROJ-1.json
 │   └── attachments...
 ├── PROJ-2/
 │   ├── PROJ-2.md
-│   ├── PROJ-2.json
 │   └── attachments...
 └── ...
 ```
@@ -250,11 +249,12 @@ Each exported issue creates this structure:
 ```
 PROJ-123/
 ├── PROJ-123.md          # Main issue content
-├── PROJ-123.json        # Raw Jira API response
 ├── screenshot.png       # Attachments keep
 ├── design-doc.pdf       # their original names
 └── meeting-notes.docx
 ```
+
+Pass `--include-json` to also write `PROJ-123.json` with the raw Jira API response.
 
 ### The Markdown File
 

@@ -42,6 +42,7 @@ class BulkExporter:
         refresh_fields: Force refresh of cached Jira field metadata
         include_fields: Comma-separated custom field names to include
         exclude_fields: Comma-separated custom field names to exclude
+        include_json: Write raw JSON response alongside each Markdown file
     """
 
     def __init__(
@@ -53,6 +54,7 @@ class BulkExporter:
         refresh_fields: bool = False,
         include_fields: Optional[str] = None,
         exclude_fields: Optional[str] = None,
+        include_json: bool = False,
     ):
         self.api_client = api_client
         self.semaphore = asyncio.Semaphore(concurrency)
@@ -62,6 +64,7 @@ class BulkExporter:
         self.refresh_fields = refresh_fields
         self.include_fields = include_fields
         self.exclude_fields = exclude_fields
+        self.include_json = include_json
 
     async def export_bulk(
         self, issue_keys: List[str]
@@ -186,13 +189,14 @@ class BulkExporter:
             field_filter=field_filter,
         )
 
-        # Write JSON and markdown files
-        json_file = output_path / f"{issue_key}.json"
-        await asyncio.to_thread(
-            json_file.write_text,
-            json.dumps(issue_data, indent=2, ensure_ascii=False),
-            encoding="utf-8",
-        )
+        # Write JSON (opt-in) and markdown files
+        if self.include_json:
+            json_file = output_path / f"{issue_key}.json"
+            await asyncio.to_thread(
+                json_file.write_text,
+                json.dumps(issue_data, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
 
         md_file = output_path / f"{issue_key}.md"
         await asyncio.to_thread(md_file.write_text, markdown_content, encoding="utf-8")

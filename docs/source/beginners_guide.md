@@ -176,10 +176,15 @@ Jarkdown creates a new folder in your current directory. For example, if you run
 ```
 PROJ-123/
 ├── PROJ-123.md       (the issue content)
-├── PROJ-123.json     (the raw API data)
 ├── image1.png        (any attachments)
 ├── document.pdf
 └── ...
+```
+
+To also save the raw JSON API response, add `--include-json`:
+
+```bash
+jarkdown export PROJ-123 --include-json
 ```
 
 ### Specifying an Output Directory
