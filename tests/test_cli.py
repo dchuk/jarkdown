@@ -445,19 +445,19 @@ class TestCLI:
                         finally:
                             os.chdir(original_cwd)
 
-    def test_bulk_subcommand_stub(self):
-        """bulk subcommand prints not-yet-implemented and exits 0."""
-        with patch("sys.argv", ["jarkdown", "bulk", "PROJ-1", "PROJ-2"]):
-            with pytest.raises(SystemExit) as exc_info:
+    def test_bulk_subcommand_routes_to_handler(self):
+        """bulk subcommand routes to _handle_bulk (real implementation)."""
+        with patch("jarkdown.jarkdown._handle_bulk") as mock_bulk:
+            with patch("sys.argv", ["jarkdown", "bulk", "PROJ-1", "PROJ-2"]):
                 main()
-            assert exc_info.value.code == 0
+            mock_bulk.assert_called_once()
 
-    def test_query_subcommand_stub(self):
-        """query subcommand prints not-yet-implemented and exits 0."""
-        with patch("sys.argv", ["jarkdown", "query", "project = FOO"]):
-            with pytest.raises(SystemExit) as exc_info:
+    def test_query_subcommand_routes_to_handler(self):
+        """query subcommand routes to _handle_query (real implementation)."""
+        with patch("jarkdown.jarkdown._handle_query") as mock_query:
+            with patch("sys.argv", ["jarkdown", "query", "project = FOO"]):
                 main()
-            assert exc_info.value.code == 0
+            mock_query.assert_called_once()
 
     def test_setup_subcommand(self):
         """setup subcommand invokes setup_configuration and exits 0."""
