@@ -72,7 +72,7 @@ def _make_client_mock(issue_data, domain="example.atlassian.net"):
     return mock_class, mock_client
 
 
-def _fake_download_all(attachments, out_dir):
+async def _fake_download_all(attachments, out_dir):
     """Side effect for AttachmentHandler.download_all_attachments.
 
     Creates dummy files on disk so tests checking file existence pass.
@@ -181,7 +181,7 @@ class TestCLI:
 
         with patch("jarkdown.jarkdown.JiraApiClient", mock_jira_class):
             with patch("jarkdown.jarkdown.AttachmentHandler") as mock_ah_class:
-                mock_ah_class.return_value.download_all_attachments.return_value = []
+                mock_ah_class.return_value.download_all_attachments = AsyncMock(return_value=[])
                 with patch("jarkdown.field_cache.FieldMetadataCache") as mock_fmc:
                     mock_fmc.return_value.is_stale.return_value = False
                     mock_fmc.return_value.load.return_value = []
@@ -311,7 +311,7 @@ class TestCLI:
 
         with patch("jarkdown.jarkdown.JiraApiClient", mock_jira_class):
             with patch("jarkdown.jarkdown.AttachmentHandler") as mock_ah_class:
-                mock_ah_class.return_value.download_all_attachments.return_value = []
+                mock_ah_class.return_value.download_all_attachments = AsyncMock(return_value=[])
                 with patch("jarkdown.field_cache.FieldMetadataCache") as mock_fmc:
                     mock_fmc.return_value.is_stale.return_value = False
                     mock_fmc.return_value.load.return_value = []
@@ -422,7 +422,7 @@ class TestCLI:
 
         with patch("jarkdown.jarkdown.JiraApiClient", mock_jira_class):
             with patch("jarkdown.jarkdown.AttachmentHandler") as mock_ah_class:
-                mock_ah_class.return_value.download_all_attachments.return_value = []
+                mock_ah_class.return_value.download_all_attachments = AsyncMock(return_value=[])
                 with patch("jarkdown.field_cache.FieldMetadataCache") as mock_fmc:
                     mock_fmc.return_value.is_stale.return_value = False
                     mock_fmc.return_value.load.return_value = []
