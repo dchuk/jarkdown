@@ -83,20 +83,9 @@ git clone https://github.com/chrisbyboston/jarkdown.git
 cd jarkdown
 ```
 
-2. Create a virtual environment and install dependencies:
-
-**On macOS/Linux:**
+2. Install dependencies (uv creates and manages the virtual environment automatically):
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -e ".[dev]"
-```
-
-**On Windows:**
-```bash
-python -m venv venv
-venv\Scripts\activate
-pip install -e ".[dev]"
+uv sync --dev
 ```
 
 3. Set up your `.env` file as described above
