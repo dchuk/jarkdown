@@ -6,8 +6,10 @@ This tool exports a Jira Cloud issue into a markdown file with all its attachmen
 downloaded locally and referenced inline.
 """
 
+import asyncio
 import json
 import os
+import re
 import sys
 import argparse
 import logging
@@ -23,6 +25,8 @@ from .markdown_converter import MarkdownConverter
 from .exceptions import (
     JarkdownError,
 )
+
+_ISSUE_KEY_RE = re.compile(r"^[A-Z]+-\d+$")
 
 
 def get_version():
@@ -86,19 +90,19 @@ def setup_configuration():
             f.write(f"JIRA_API_TOKEN={api_token}\n")
 
         print(f"\nConfiguration saved to {env_path}")
-        print("You can now run: jarkdown ISSUE-KEY")
+        print("You can now run: jarkdown export ISSUE-KEY")
 
     except Exception as e:
         print(f"Error writing .env file: {e}")
         sys.exit(1)
 
 
-def export_issue(api_client, issue_key, output_dir=None,
-                 refresh_fields=False, include_fields=None, exclude_fields=None):
+async def export_issue(api_client, issue_key, output_dir=None,
+                       refresh_fields=False, include_fields=None, exclude_fields=None):
     """Export a Jira issue to markdown.
 
     Args:
-        api_client: JiraApiClient instance
+        api_client: JiraApiClient instance (async context manager)
         issue_key: Jira issue key (e.g., 'PROJ-123')
         output_dir: Optional output directory
         refresh_fields: Force refresh of cached field metadata
@@ -113,8 +117,8 @@ def export_issue(api_client, issue_key, output_dir=None,
     """
     logger = logging.getLogger(__name__)
 
-    # Fetch issue data
-    issue_data = api_client.fetch_issue(issue_key)
+    # Fetch issue data (async)
+    issue_data = await api_client.fetch_issue(issue_key)
 
     # Determine output directory
     if output_dir:
@@ -139,7 +143,14 @@ def export_issue(api_client, issue_key, output_dir=None,
     from .config_manager import ConfigManager
 
     field_cache = FieldMetadataCache(api_client.domain)
-    field_cache.refresh(api_client, force=refresh_fields)
+    # Async-aware field refresh: call fetch_fields directly to avoid sync wrapper
+    if refresh_fields or field_cache.is_stale():
+        try:
+            fields = await api_client.fetch_fields()
+            field_cache.save(fields)
+            logger.info(f"Field metadata cached ({len(fields)} fields)")
+        except Exception as e:
+            logger.warning(f"Failed to refresh field metadata: {e}")
 
     config_manager = ConfigManager()
     field_filter = config_manager.get_field_filter(
@@ -171,70 +182,32 @@ def export_issue(api_client, issue_key, output_dir=None,
     return output_path
 
 
-def main():
-    """Main CLI entry point."""
-    parser = argparse.ArgumentParser(
-        description="Export Jira issues to Markdown with attachments",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  jarkdown PROJ-123
-  jarkdown PROJ-123 --output ~/Documents/jira-exports
+async def _async_export(args, domain, email, api_token):
+    """Async inner function for the export subcommand.
 
-Environment variables:
-  JIRA_DOMAIN     - Your Jira domain (e.g., your-company.atlassian.net)
-  JIRA_EMAIL      - Your Jira account email
-  JIRA_API_TOKEN  - Your Jira API token
-        """,
-    )
+    Args:
+        args: Parsed CLI arguments
+        domain: Jira domain from environment
+        email: Jira email from environment
+        api_token: Jira API token from environment
+    """
+    async with JiraApiClient(domain, email, api_token) as client:
+        await export_issue(
+            client,
+            args.issue_key,
+            args.output,
+            refresh_fields=getattr(args, "refresh_fields", False),
+            include_fields=getattr(args, "include_fields", None),
+            exclude_fields=getattr(args, "exclude_fields", None),
+        )
 
-    parser.add_argument(
-        "issue_key",
-        nargs="?",  # Make optional to allow --setup without issue key
-        help="Jira issue key (e.g., PROJ-123)",
-    )
-    parser.add_argument(
-        "--setup",
-        action="store_true",
-        help="Interactive setup to configure Jira credentials",
-    )
-    parser.add_argument(
-        "--output", "-o", help="Output directory (default: current directory)"
-    )
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="Enable verbose logging"
-    )
-    parser.add_argument(
-        "--refresh-fields",
-        action="store_true",
-        help="Force refresh of cached Jira field metadata",
-    )
-    parser.add_argument(
-        "--include-fields",
-        help="Comma-separated list of custom field names to include",
-    )
-    parser.add_argument(
-        "--exclude-fields",
-        help="Comma-separated list of custom field names to exclude",
-    )
-    parser.add_argument(
-        "--version",
-        action="version",
-        version=get_version(),
-        help="Show program version and exit",
-    )
 
-    args = parser.parse_args()
+def _handle_export(args):
+    """Handle the export subcommand: validate env then run async export.
 
-    # Handle --setup command
-    if args.setup:
-        setup_configuration()
-        sys.exit(0)
-
-    # If not setup, issue_key is required
-    if not args.issue_key:
-        parser.error("issue_key is required unless using --setup")
-
+    Args:
+        args: Parsed CLI arguments with issue_key and shared flags
+    """
     # Set up logging
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
@@ -244,7 +217,6 @@ Environment variables:
     # Load environment variables
     load_dotenv()
 
-    # Export the issue
     try:
         # Get credentials from environment
         domain = os.getenv("JIRA_DOMAIN")
@@ -255,7 +227,7 @@ Environment variables:
         env_path = Path.cwd() / ".env"
         if not env_path.exists() and not all([domain, email, api_token]):
             print("Error: Configuration file '.env' not found.")
-            print("\nTo set up your configuration, run: jarkdown --setup")
+            print("\nTo set up your configuration, run: jarkdown setup")
             print("Or create a .env file manually with:")
             print("  JIRA_DOMAIN=your-company.atlassian.net")
             print("  JIRA_EMAIL=your-email@example.com")
@@ -275,16 +247,11 @@ Environment variables:
             print(
                 f"Error: Missing required environment variables: {', '.join(missing)}"
             )
-            print("\nTo set up your configuration, run: jarkdown --setup")
+            print("\nTo set up your configuration, run: jarkdown setup")
             print("Or add the missing variables to your .env file.")
             sys.exit(1)
-        api_client = JiraApiClient(domain, email, api_token)
-        export_issue(
-            api_client, args.issue_key, args.output,
-            refresh_fields=getattr(args, 'refresh_fields', False),
-            include_fields=getattr(args, 'include_fields', None),
-            exclude_fields=getattr(args, 'exclude_fields', None),
-        )
+
+        asyncio.run(_async_export(args, domain, email, api_token))
 
     except JarkdownError as e:
         # Catch all JarkdownError subclasses with a single handler
@@ -295,6 +262,169 @@ Environment variables:
         sys.exit(1)
     except Exception as e:
         print(f"Unexpected error: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def _handle_bulk(args):
+    """Handle bulk subcommand (stub — Plan 04 wires real implementation).
+
+    Args:
+        args: Parsed CLI arguments
+    """
+    print("bulk export: not yet implemented", file=sys.stderr)
+    sys.exit(0)
+
+
+def _handle_query(args):
+    """Handle query subcommand (stub — Plan 04 wires real implementation).
+
+    Args:
+        args: Parsed CLI arguments
+    """
+    print("query export: not yet implemented", file=sys.stderr)
+    sys.exit(0)
+
+
+def main():
+    """Main CLI entry point."""
+    # Backward-compat shim: bare issue key on argv[1] → inject "export"
+    if len(sys.argv) > 1 and _ISSUE_KEY_RE.match(sys.argv[1]):
+        sys.argv.insert(1, "export")
+
+    # Parent parser: shared flags inherited by all subcommands, no help
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    parent_parser.add_argument(
+        "--output", "-o", help="Output directory (default: current directory)"
+    )
+    parent_parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Enable verbose logging"
+    )
+    parent_parser.add_argument(
+        "--refresh-fields",
+        action="store_true",
+        help="Force refresh of cached Jira field metadata",
+    )
+    parent_parser.add_argument(
+        "--include-fields",
+        help="Comma-separated list of custom field names to include",
+    )
+    parent_parser.add_argument(
+        "--exclude-fields",
+        help="Comma-separated list of custom field names to exclude",
+    )
+
+    # Main parser
+    parser = argparse.ArgumentParser(
+        prog="jarkdown",
+        description="Export Jira issues to Markdown with attachments",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""Examples:
+  jarkdown export PROJ-123
+  jarkdown PROJ-123                              # backward-compat form
+  jarkdown export PROJ-123 --output ~/Documents/jira-exports
+  jarkdown bulk PROJ-1 PROJ-2 PROJ-3
+  jarkdown query 'project = FOO AND status = Done'
+  jarkdown setup
+
+Environment variables:
+  JIRA_DOMAIN     - Your Jira domain (e.g., your-company.atlassian.net)
+  JIRA_EMAIL      - Your Jira account email
+  JIRA_API_TOKEN  - Your Jira API token
+        """,
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=get_version(),
+        help="Show program version and exit",
+    )
+
+    subparsers = parser.add_subparsers(dest="command")
+
+    # export subcommand
+    export_parser = subparsers.add_parser(
+        "export",
+        help="Export a single Jira issue to Markdown",
+        parents=[parent_parser],
+    )
+    export_parser.add_argument(
+        "issue_key", help="Jira issue key (e.g., PROJ-123)"
+    )
+
+    # bulk subcommand
+    bulk_parser = subparsers.add_parser(
+        "bulk",
+        help="Export multiple Jira issues by key",
+        parents=[parent_parser],
+    )
+    bulk_parser.add_argument(
+        "issue_keys",
+        nargs="+",
+        help="One or more Jira issue keys (e.g., PROJ-1 PROJ-2 PROJ-3)",
+    )
+    bulk_parser.add_argument(
+        "--max-results",
+        type=int,
+        default=None,
+        help="Maximum number of issues to export",
+    )
+    bulk_parser.add_argument(
+        "--batch-name",
+        help="Optional name for output batch directory wrapper",
+    )
+    bulk_parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=3,
+        help="Maximum concurrent exports (default: 3)",
+    )
+
+    # query subcommand
+    query_parser = subparsers.add_parser(
+        "query",
+        help="Export Jira issues matching a JQL query",
+        parents=[parent_parser],
+    )
+    query_parser.add_argument(
+        "jql",
+        help="JQL query string (e.g., 'project = FOO AND status = Done')",
+    )
+    query_parser.add_argument(
+        "--max-results",
+        type=int,
+        default=50,
+        help="Maximum number of issues to export (default: 50)",
+    )
+    query_parser.add_argument(
+        "--batch-name",
+        help="Optional name for output batch directory wrapper",
+    )
+    query_parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=3,
+        help="Maximum concurrent exports (default: 3)",
+    )
+
+    # setup subcommand
+    subparsers.add_parser(
+        "setup",
+        help="Interactive setup to configure Jira credentials",
+    )
+
+    args = parser.parse_args()
+
+    if args.command == "export":
+        _handle_export(args)
+    elif args.command == "bulk":
+        _handle_bulk(args)
+    elif args.command == "query":
+        _handle_query(args)
+    elif args.command == "setup":
+        setup_configuration()
+        sys.exit(0)
+    else:
+        parser.print_help()
         sys.exit(1)
 
 
