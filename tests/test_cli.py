@@ -474,3 +474,18 @@ class TestCLI:
             with pytest.raises(SystemExit) as exc_info:
                 main()
             assert exc_info.value.code == 1
+
+    def test_query_limit_alias_sets_max_results(self):
+        """--limit is an alias for --max-results on the query subcommand."""
+        import argparse
+
+        # Reach into the parser directly to verify dest value
+        with patch("jarkdown.jarkdown._handle_query") as mock_query:
+            with patch(
+                "sys.argv",
+                ["jarkdown", "query", "project = FOO", "--limit", "10"],
+            ):
+                main()
+            mock_query.assert_called_once()
+            args = mock_query.call_args[0][0]
+            assert args.max_results == 10

@@ -177,16 +177,17 @@ jarkdown query 'project = FOO AND status = Done'
 # Export current sprint issues
 jarkdown query 'project = FOO AND sprint in openSprints()'
 
-# Limit results
+# Limit results (both flags are equivalent)
+jarkdown query 'assignee = currentUser() ORDER BY created DESC' --limit 25
 jarkdown query 'assignee = currentUser() ORDER BY created DESC' --max-results 25
 
 # Full options
-jarkdown query 'project = FOO AND type = Bug' --max-results 100 --concurrency 5 --output ~/exports
+jarkdown query 'project = FOO AND type = Bug' --limit 100 --concurrency 5 --output ~/exports
 ```
 
 ### Options
 
-- `--max-results N` - Maximum number of issues to export (default: 50). Results are paginated automatically.
+- `--limit N` / `--max-results N` - Maximum number of issues to export (default: 50). Both flags are equivalent; `--limit` is the shorter, more intuitive form. Results are paginated automatically.
 - `--concurrency N` - Maximum concurrent exports (default: 3)
 - `--batch-name NAME` - Wrap all issue directories in a named subdirectory
 - `--output` / `-o` - Root output directory

@@ -132,7 +132,8 @@ jarkdown bulk PROJ-1 PROJ-2 --batch-name sprint-23
 # Export all issues matching a JQL query
 jarkdown query 'project = FOO AND status = Done'
 
-# Limit results
+# Limit results (--limit and --max-results are equivalent)
+jarkdown query 'project = FOO AND sprint in openSprints()' --limit 100
 jarkdown query 'project = FOO AND sprint in openSprints()' --max-results 100
 
 # With concurrency control

@@ -517,8 +517,10 @@ Environment variables:
     )
     query_parser.add_argument(
         "--max-results",
+        "--limit",
         type=int,
         default=50,
+        dest="max_results",
         help="Maximum number of issues to export (default: 50)",
     )
     query_parser.add_argument(
