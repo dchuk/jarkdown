@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "jarkdown"
@@ -60,10 +60,8 @@ dev = [
     "pre-commit>=2.0.0",
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["jarkdown*"]
-exclude = ["tests*"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/jarkdown"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
