@@ -992,14 +992,18 @@ class MarkdownConverter:
 
         # Convert description from HTML to Markdown
         description_html = rendered_fields.get("description", "")
-        if not description_html and fields.get("description"):
-            # If no rendered HTML, try to use raw description
-            # (This would need ADF to Markdown conversion for full support)
-            description_html = f"<p>{fields.get('description')}</p>"
-
         if description_html:
             description_md = self.convert_html_to_markdown(description_html)
-            # Replace attachment links
+            description_md = self.replace_attachment_links(
+                description_md, downloaded_attachments
+            )
+            lines.append(description_md)
+        elif fields.get("description"):
+            raw_desc = fields["description"]
+            if isinstance(raw_desc, dict):
+                description_md = self._parse_adf_to_markdown(raw_desc)
+            else:
+                description_md = str(raw_desc)
             description_md = self.replace_attachment_links(
                 description_md, downloaded_attachments
             )

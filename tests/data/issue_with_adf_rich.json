@@ -1,0 +1,118 @@
+{
+  "key": "PROJ-300",
+  "fields": {
+    "summary": "ADF Rich Content Test Issue",
+    "issuetype": {
+      "name": "Bug"
+    },
+    "status": {
+      "name": "In Progress",
+      "statusCategory": {
+        "name": "In Progress"
+      }
+    },
+    "priority": {
+      "name": "High"
+    },
+    "resolution": null,
+    "project": {
+      "key": "PROJ",
+      "name": "Example Project"
+    },
+    "assignee": {
+      "displayName": "Alice Dev"
+    },
+    "reporter": {
+      "displayName": "Bob QA"
+    },
+    "creator": {
+      "displayName": "Bob QA"
+    },
+    "labels": [],
+    "components": [],
+    "parent": null,
+    "versions": [],
+    "fixVersions": [],
+    "created": "2025-04-01T09:00:00.000+0000",
+    "updated": "2025-04-02T11:00:00.000+0000",
+    "resolutiondate": null,
+    "duedate": null,
+    "timetracking": {},
+    "votes": {"votes": 0},
+    "watches": {"watchCount": 0},
+    "progress": {"percent": 0},
+    "aggregateprogress": {"percent": 0},
+    "issuelinks": [],
+    "subtasks": [],
+    "worklog": {"worklogs": [], "total": 0, "maxResults": 20},
+    "comment": {"comments": []},
+    "attachment": [],
+    "environment": null,
+    "description": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        {
+          "type": "heading",
+          "attrs": {"level": 2},
+          "content": [{"type": "text", "text": "Overview"}]
+        },
+        {
+          "type": "table",
+          "content": [
+            {
+              "type": "tableRow",
+              "content": [
+                {"type": "tableCell", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Browser"}]}]},
+                {"type": "tableCell", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Version"}]}]}
+              ]
+            },
+            {
+              "type": "tableRow",
+              "content": [
+                {"type": "tableCell", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Chrome"}]}]},
+                {"type": "tableCell", "content": [{"type": "paragraph", "content": [{"type": "text", "text": "120.0"}]}]}
+              ]
+            }
+          ]
+        },
+        {
+          "type": "panel",
+          "attrs": {"panelType": "info"},
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{"type": "text", "text": "This is important context"}]
+            }
+          ]
+        },
+        {
+          "type": "taskList",
+          "content": [
+            {
+              "type": "taskItem",
+              "attrs": {"state": "DONE", "localId": "t1"},
+              "content": [{"type": "text", "text": "Reproduce bug"}]
+            },
+            {
+              "type": "taskItem",
+              "attrs": {"state": "TODO", "localId": "t2"},
+              "content": [{"type": "text", "text": "Write fix"}]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {"type": "emoji", "attrs": {"shortName": ":warning:", "id": "warning"}},
+            {"type": "text", "text": " Critical issue"}
+          ]
+        },
+        {
+          "type": "rule"
+        }
+      ]
+    }
+  },
+  "renderedFields": {}
+}
