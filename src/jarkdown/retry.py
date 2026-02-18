@@ -64,3 +64,64 @@ def parse_retry_after(header_value: str) -> float:
     except Exception:
         # Cannot parse — return default 5 seconds
         return 5.0
+
+
+async def retry_with_backoff(
+    coro_func,
+    *args,
+    config: RetryConfig = DEFAULT_RETRY,
+    retry_after_header: str = None,
+    **kwargs,
+):
+    """Retry an async callable with exponential backoff.
+
+    Retries on aiohttp.ClientResponseError with retryable status codes,
+    asyncio.TimeoutError, and aiohttp.ServerTimeoutError.
+
+    Args:
+        coro_func: Async callable to retry.
+        *args: Positional arguments to pass to coro_func.
+        config: RetryConfig controlling retry behavior.
+        retry_after_header: If provided, used for first retry delay.
+        **kwargs: Keyword arguments to pass to coro_func.
+
+    Returns:
+        Result of coro_func on success.
+
+    Raises:
+        The last exception if all retries are exhausted.
+    """
+    import aiohttp
+
+    last_exc = None
+    for attempt in range(config.max_retries + 1):
+        try:
+            return await coro_func(*args, **kwargs)
+        except aiohttp.ClientResponseError as e:
+            if e.status not in config.retryable_status_codes:
+                raise  # Non-retryable HTTP error (401, 404, etc.)
+            last_exc = e
+            if attempt == config.max_retries:
+                break
+            # Use Retry-After if available (only on first attempt and if provided)
+            if attempt == 0 and retry_after_header:
+                delay = parse_retry_after(retry_after_header)
+            else:
+                delay = min(config.base_delay * (2**attempt), config.max_delay)
+                if config.jitter:
+                    delay += random.uniform(0, delay * 0.1)
+            logger.warning(
+                f"Rate limited (attempt {attempt + 1}/{config.max_retries}), "
+                f"retrying in {delay:.1f}s..."
+            )
+            await asyncio.sleep(delay)
+        except asyncio.TimeoutError as e:
+            last_exc = e
+            if attempt == config.max_retries:
+                break
+            delay = min(config.base_delay * (2**attempt), config.max_delay)
+            if config.jitter:
+                delay += random.uniform(0, delay * 0.1)
+            await asyncio.sleep(delay)
+
+    raise last_exc
