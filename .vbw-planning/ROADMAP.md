@@ -9,7 +9,7 @@
 |-------|--------|-------|-------|---------|
 | 1 | Complete | 4 | 16 | 14 |
 | 2 | Complete | 4 | 18 | 18 |
-| 3 | Pending | 0 | 0 | 0 |
+| 3 | Complete | 3 | 10 | 9 |
 | 4 | Pending | 0 | 0 | 0 |
 
 ---
@@ -17,7 +17,7 @@
 ## Phase List
 - [x] [Phase 1: Standard Field Coverage](#phase-1-standard-field-coverage)
 - [x] [Phase 2: Custom Fields & ADF](#phase-2-custom-fields-adf)
-- [ ] [Phase 3: uv Migration & Tooling](#phase-3-uv-migration-tooling)
+- [x] [Phase 3: uv Migration & Tooling](#phase-3-uv-migration-tooling)
 - [ ] [Phase 4: Bulk Export & JQL](#phase-4-bulk-export-jql)
 
 ---
