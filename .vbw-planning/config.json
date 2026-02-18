@@ -1,5 +1,5 @@
 {
-  "effort": "thorough",
+  "effort": "balanced",
   "autonomy": "standard",
   "auto_commit": true,
   "planning_tracking": "commit",
@@ -16,7 +16,7 @@
   "plain_summary": true,
   "active_profile": "default",
   "custom_profiles": {},
-  "model_profile": "quality",
+  "model_profile": "balanced",
   "model_overrides": {},
   "agent_max_turns": {
     "scout": 15,
