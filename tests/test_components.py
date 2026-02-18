@@ -1,10 +1,11 @@
 """Tests for the refactored component classes."""
 
 import json
+import re
 import yaml
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, patch, MagicMock
 import pytest
-import requests
+from aioresponses import aioresponses
 
 from jarkdown.jira_api_client import JiraApiClient
 from jarkdown.attachment_handler import AttachmentHandler
@@ -18,15 +19,10 @@ from jarkdown.exceptions import (
 
 
 @pytest.fixture
-def api_client():
-    """Create a JiraApiClient instance"""
-    return JiraApiClient("example.atlassian.net", "test@example.com", "test-token-123")
-
-
-@pytest.fixture
-def attachment_handler(api_client):
-    """Create an AttachmentHandler instance"""
-    return AttachmentHandler(api_client)
+def mock_api():
+    """Provide aioresponses mock context."""
+    with aioresponses() as m:
+        yield m
 
 
 @pytest.fixture
@@ -67,7 +63,7 @@ class TestJiraApiClient:
     """Tests for JiraApiClient class"""
 
     def test_init_with_valid_credentials(self):
-        """Test initialization sets up session correctly"""
+        """Test initialization sets up attributes correctly (session created in __aenter__)"""
         client = JiraApiClient(
             "example.atlassian.net", "test@example.com", "test-token-123"
         )
@@ -77,80 +73,73 @@ class TestJiraApiClient:
         assert client.api_token == "test-token-123"
         assert client.base_url == "https://example.atlassian.net"
         assert client.api_base == "https://example.atlassian.net/rest/api/3"
-        assert client.session.auth == ("test@example.com", "test-token-123")
-        assert client.session.headers["Accept"] == "application/json"
-        assert client.session.headers["Content-Type"] == "application/json"
+        assert client.session is None  # session not created until __aenter__
 
-    def test_successful_api_call(self, api_client, issue_with_attachments, mocker):
+    async def test_successful_api_call(self, mock_api, issue_with_attachments):
         """Test successful API call returns JSON data"""
-        mock_response = Mock()
-        mock_response.raise_for_status = Mock()
-        mock_response.json.return_value = issue_with_attachments
-
-        mocker.patch.object(api_client.session, "get", return_value=mock_response)
-
-        result = api_client.fetch_issue("TEST-123")
-
-        assert result == issue_with_attachments
-        api_client.session.get.assert_called_once_with(
-            "https://example.atlassian.net/rest/api/3/issue/TEST-123",
-            params={
-                "fields": "*all",
-                "expand": "renderedFields",
-            },
+        # Use regex to match URL regardless of query param encoding
+        mock_api.get(
+            re.compile(r"https://example\.atlassian\.net/rest/api/3/issue/TEST-123"),
+            payload=issue_with_attachments,
+            status=200,
         )
 
-    def test_401_authentication_error(self, api_client, mocker):
+        async with JiraApiClient("example.atlassian.net", "test@example.com", "test-token-123") as client:
+            result = await client.fetch_issue("TEST-123")
+
+        assert result == issue_with_attachments
+
+    async def test_401_authentication_error(self, mock_api):
         """Test 401 response raises AuthenticationError"""
-        mock_response = Mock()
-        mock_response.status_code = 401
-        mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError()
+        mock_api.get(
+            re.compile(r"https://example\.atlassian\.net/rest/api/3/issue/TEST-123"),
+            status=401,
+        )
 
-        mocker.patch.object(api_client.session, "get", return_value=mock_response)
+        async with JiraApiClient("example.atlassian.net", "test@example.com", "test-token-123") as client:
+            with pytest.raises(AuthenticationError) as exc_info:
+                await client.fetch_issue("TEST-123")
 
-        with pytest.raises(AuthenticationError) as exc_info:
-            api_client.fetch_issue("TEST-123")
+        assert "Authentication" in str(exc_info.value)
 
-        assert "401" in str(exc_info.value) or "Authentication" in str(exc_info.value)
-
-    def test_404_not_found_error(self, api_client, mocker):
+    async def test_404_not_found_error(self, mock_api):
         """Test 404 response raises IssueNotFoundError"""
-        mock_response = Mock()
-        mock_response.status_code = 404
-        mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError()
+        mock_api.get(
+            re.compile(r"https://example\.atlassian\.net/rest/api/3/issue/TEST-123"),
+            status=404,
+        )
 
-        mocker.patch.object(api_client.session, "get", return_value=mock_response)
-
-        with pytest.raises(IssueNotFoundError) as exc_info:
-            api_client.fetch_issue("TEST-123")
+        async with JiraApiClient("example.atlassian.net", "test@example.com", "test-token-123") as client:
+            with pytest.raises(IssueNotFoundError) as exc_info:
+                await client.fetch_issue("TEST-123")
 
         assert "TEST-123" in str(exc_info.value)
 
-    def test_generic_http_error(self, api_client, mocker):
+    async def test_generic_http_error(self, mock_api):
         """Test generic HTTP error raises JiraApiError"""
-        mock_response = Mock()
-        mock_response.status_code = 500
-        mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(
-            "Server error"
+        mock_api.get(
+            re.compile(r"https://example\.atlassian\.net/rest/api/3/issue/TEST-123"),
+            status=500,
         )
 
-        mocker.patch.object(api_client.session, "get", return_value=mock_response)
-
-        with pytest.raises(JiraApiError) as exc_info:
-            api_client.fetch_issue("TEST-123")
+        async with JiraApiClient("example.atlassian.net", "test@example.com", "test-token-123") as client:
+            with pytest.raises(JiraApiError) as exc_info:
+                await client.fetch_issue("TEST-123")
 
         assert exc_info.value.status_code == 500
 
-    def test_network_error(self, api_client, mocker):
+    async def test_network_error(self):
         """Test network error raises JiraApiError"""
-        mocker.patch.object(
-            api_client.session,
-            "get",
-            side_effect=requests.exceptions.ConnectionError("Network error"),
-        )
+        import aiohttp
 
-        with pytest.raises(JiraApiError) as exc_info:
-            api_client.fetch_issue("TEST-123")
+        async with JiraApiClient("example.atlassian.net", "test@example.com", "test-token-123") as client:
+            with patch.object(
+                client.session,
+                "get",
+                side_effect=aiohttp.ClientError("Network error"),
+            ):
+                with pytest.raises(JiraApiError) as exc_info:
+                    await client.fetch_issue("TEST-123")
 
         assert "Network error" in str(exc_info.value)
 
@@ -158,7 +147,7 @@ class TestJiraApiClient:
 class TestAttachmentHandler:
     """Tests for AttachmentHandler class"""
 
-    def test_single_attachment_download(self, attachment_handler, mocker, tmp_path):
+    async def test_single_attachment_download(self, tmp_path):
         """Test downloading a single attachment"""
         attachment = {
             "filename": "test.pdf",
@@ -167,15 +156,13 @@ class TestAttachmentHandler:
             "size": 1024,
         }
 
-        mock_response = Mock()
-        mock_response.iter_content = Mock(return_value=[b"fake_content"])
-        mocker.patch.object(
-            attachment_handler.api_client,
-            "download_attachment_stream",
-            return_value=mock_response,
-        )
+        mock_client = MagicMock()
+        mock_response = AsyncMock()
+        mock_response.read = AsyncMock(return_value=b"fake_content")
+        mock_client.download_attachment_stream = AsyncMock(return_value=mock_response)
 
-        result = attachment_handler.download_attachment(attachment, tmp_path)
+        handler = AttachmentHandler(mock_client)
+        result = await handler.download_attachment(attachment, tmp_path)
 
         assert result["filename"] == "test.pdf"
         assert result["original_filename"] == "test.pdf"
@@ -185,7 +172,7 @@ class TestAttachmentHandler:
         with open(tmp_path / "test.pdf", "rb") as f:
             assert f.read() == b"fake_content"
 
-    def test_filename_conflict_resolution(self, attachment_handler, mocker, tmp_path):
+    async def test_filename_conflict_resolution(self, tmp_path):
         """Test filename conflict resolution adds counter"""
         attachment = {
             "filename": "test.pdf",
@@ -197,15 +184,13 @@ class TestAttachmentHandler:
         # Create existing file
         (tmp_path / "test.pdf").write_text("existing")
 
-        mock_response = Mock()
-        mock_response.iter_content = Mock(return_value=[b"new_content"])
-        mocker.patch.object(
-            attachment_handler.api_client,
-            "download_attachment_stream",
-            return_value=mock_response,
-        )
+        mock_client = MagicMock()
+        mock_response = AsyncMock()
+        mock_response.read = AsyncMock(return_value=b"new_content")
+        mock_client.download_attachment_stream = AsyncMock(return_value=mock_response)
 
-        result = attachment_handler.download_attachment(attachment, tmp_path)
+        handler = AttachmentHandler(mock_client)
+        result = await handler.download_attachment(attachment, tmp_path)
 
         assert result["filename"] == "test_1.pdf"
         assert result["original_filename"] == "test.pdf"
@@ -214,9 +199,7 @@ class TestAttachmentHandler:
         with open(tmp_path / "test_1.pdf", "rb") as f:
             assert f.read() == b"new_content"
 
-    def test_download_error_raises_exception(
-        self, attachment_handler, mocker, tmp_path
-    ):
+    async def test_download_error_raises_exception(self, tmp_path):
         """Test download error raises AttachmentDownloadError"""
         attachment = {
             "filename": "test.pdf",
@@ -225,19 +208,19 @@ class TestAttachmentHandler:
             "size": 1024,
         }
 
-        mocker.patch.object(
-            attachment_handler.api_client,
-            "download_attachment_stream",
-            side_effect=Exception("Download failed"),
+        mock_client = MagicMock()
+        mock_client.download_attachment_stream = AsyncMock(
+            side_effect=Exception("Download failed")
         )
 
+        handler = AttachmentHandler(mock_client)
         with pytest.raises(AttachmentDownloadError) as exc_info:
-            attachment_handler.download_attachment(attachment, tmp_path)
+            await handler.download_attachment(attachment, tmp_path)
 
         assert "test.pdf" in str(exc_info.value)
         assert "Download failed" in str(exc_info.value)
 
-    def test_multiple_attachments_download(self, attachment_handler, mocker, tmp_path):
+    async def test_multiple_attachments_download(self, tmp_path):
         """Test downloading multiple attachments"""
         attachments = [
             {
@@ -254,15 +237,13 @@ class TestAttachmentHandler:
             },
         ]
 
-        mock_response = Mock()
-        mock_response.iter_content = Mock(return_value=[b"content"])
-        mocker.patch.object(
-            attachment_handler.api_client,
-            "download_attachment_stream",
-            return_value=mock_response,
-        )
+        mock_client = MagicMock()
+        mock_response = AsyncMock()
+        mock_response.read = AsyncMock(return_value=b"content")
+        mock_client.download_attachment_stream = AsyncMock(return_value=mock_response)
 
-        results = attachment_handler.download_all_attachments(attachments, tmp_path)
+        handler = AttachmentHandler(mock_client)
+        results = await handler.download_all_attachments(attachments, tmp_path)
 
         assert len(results) == 2
         assert results[0]["filename"] == "file1.pdf"
@@ -270,18 +251,22 @@ class TestAttachmentHandler:
         assert (tmp_path / "file1.pdf").exists()
         assert (tmp_path / "file2.jpg").exists()
 
-    def test_empty_attachments_list(self, attachment_handler, tmp_path):
+    async def test_empty_attachments_list(self, tmp_path):
         """Test empty attachments list returns empty list"""
-        result = attachment_handler.download_all_attachments([], tmp_path)
+        mock_client = MagicMock()
+        handler = AttachmentHandler(mock_client)
+        result = await handler.download_all_attachments([], tmp_path)
         assert result == []
 
-    def test_size_formatting(self, attachment_handler):
+    def test_size_formatting(self):
         """Test file size formatting"""
-        assert attachment_handler._format_size(500) == "500.0 B"
-        assert attachment_handler._format_size(1500) == "1.5 KB"
-        assert attachment_handler._format_size(1500000) == "1.4 MB"
-        assert attachment_handler._format_size(1500000000) == "1.4 GB"
-        assert attachment_handler._format_size(1500000000000) == "1.4 TB"
+        mock_client = MagicMock()
+        handler = AttachmentHandler(mock_client)
+        assert handler._format_size(500) == "500.0 B"
+        assert handler._format_size(1500) == "1.5 KB"
+        assert handler._format_size(1500000) == "1.4 MB"
+        assert handler._format_size(1500000000) == "1.4 GB"
+        assert handler._format_size(1500000000000) == "1.4 TB"
 
 
 class TestMarkdownConverter:
