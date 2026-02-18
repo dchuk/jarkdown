@@ -523,6 +523,39 @@ class MarkdownConverter:
                 return f"[{url}]({url})"
             return ""
 
+        elif doc_type == "taskList":
+            content = adf_content.get("content", [])
+            items = []
+            for item in content:
+                items.append(self._parse_adf_to_markdown(item))
+            return "\n".join(items)
+
+        elif doc_type == "taskItem":
+            attrs = adf_content.get("attrs", {})
+            state = attrs.get("state", "TODO")
+            checkbox = "[x]" if state == "DONE" else "[ ]"
+            content = adf_content.get("content", [])
+            text = "".join(self._parse_adf_to_markdown(node) for node in content)
+            return f"- {checkbox} {text}"
+
+        elif doc_type == "decisionList":
+            content = adf_content.get("content", [])
+            items = []
+            for item in content:
+                items.append(self._parse_adf_to_markdown(item))
+            return "\n".join(items)
+
+        elif doc_type == "decisionItem":
+            attrs = adf_content.get("attrs", {})
+            content = adf_content.get("content", [])
+            text = "".join(self._parse_adf_to_markdown(node) for node in content)
+            return f"> **Decision:** {text}"
+
+        elif doc_type == "mediaGroup":
+            content = adf_content.get("content", [])
+            rendered = [self._parse_adf_to_markdown(node) for node in content if node]
+            return "\n".join(filter(None, rendered))
+
         else:
             # Unknown type - try to process content if it exists
             content = adf_content.get("content", [])
