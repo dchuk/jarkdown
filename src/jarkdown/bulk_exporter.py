@@ -1,15 +1,15 @@
 """Bulk export engine for exporting multiple Jira issues concurrently."""
 
 import asyncio
-import json
 import logging
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from .exceptions import AuthenticationError, IssueNotFoundError, JarkdownError
+from .export_core import perform_export
 
 logger = logging.getLogger(__name__)
 
@@ -131,9 +131,8 @@ class BulkExporter:
     async def _do_export(self, issue_key: str) -> ExportResult:
         """Perform the actual export workflow for a single issue.
 
-        Replicates the logic from jarkdown.export_issue() inline to avoid a
-        circular import (jarkdown.py imports BulkExporter; BulkExporter must
-        not import from jarkdown.py).
+        Delegates to :func:`export_core.perform_export` so the workflow is
+        defined in one place and shared with ``jarkdown.export_issue()``.
 
         Args:
             issue_key: Jira issue key to export
@@ -144,63 +143,15 @@ class BulkExporter:
         Raises:
             JarkdownError: If export fails for any reason
         """
-        from .attachment_handler import AttachmentHandler
-        from .config_manager import ConfigManager
-        from .field_cache import FieldMetadataCache
-        from .markdown_converter import MarkdownConverter
-
-        # Fetch issue data
-        issue_data = await self.api_client.fetch_issue(issue_key)
-
-        # Resolve output path
-        output_path = self.output_dir / issue_key
-        output_path.mkdir(parents=True, exist_ok=True)
-
-        # Download attachments
-        attachment_handler = AttachmentHandler(self.api_client)
-        attachments = issue_data.get("fields", {}).get("attachment", [])
-        downloaded_attachments = await attachment_handler.download_all_attachments(
-            attachments, output_path
+        output_path = await perform_export(
+            self.api_client,
+            issue_key,
+            self.output_dir / issue_key,
+            refresh_fields=self.refresh_fields,
+            include_fields=self.include_fields,
+            exclude_fields=self.exclude_fields,
+            include_json=self.include_json,
         )
-
-        # Set up field metadata and config
-        field_cache = FieldMetadataCache(self.api_client.domain)
-        if self.refresh_fields or field_cache.is_stale():
-            try:
-                fields = await self.api_client.fetch_fields()
-                field_cache.save(fields)
-            except Exception as e:
-                logger.warning(f"Failed to refresh field metadata: {e}")
-
-        config_manager = ConfigManager()
-        field_filter = config_manager.get_field_filter(
-            cli_include=self.include_fields,
-            cli_exclude=self.exclude_fields,
-        )
-
-        # Convert to markdown
-        markdown_converter = MarkdownConverter(
-            self.api_client.base_url, self.api_client.domain
-        )
-        markdown_content = markdown_converter.compose_markdown(
-            issue_data,
-            downloaded_attachments,
-            field_cache=field_cache,
-            field_filter=field_filter,
-        )
-
-        # Write JSON (opt-in) and markdown files
-        if self.include_json:
-            json_file = output_path / f"{issue_key}.json"
-            await asyncio.to_thread(
-                json_file.write_text,
-                json.dumps(issue_data, indent=2, ensure_ascii=False),
-                encoding="utf-8",
-            )
-
-        md_file = output_path / f"{issue_key}.md"
-        await asyncio.to_thread(md_file.write_text, markdown_content, encoding="utf-8")
-
         return ExportResult(issue_key=issue_key, success=True, output_path=output_path)
 
     def generate_index_md(

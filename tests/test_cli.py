@@ -102,7 +102,7 @@ class TestCLI:
         mock_jira_class, _ = _make_client_mock(issue_with_attachments)
 
         with patch("jarkdown.jarkdown.JiraApiClient", mock_jira_class):
-            with patch("jarkdown.jarkdown.AttachmentHandler") as mock_ah_class:
+            with patch("jarkdown.export_core.AttachmentHandler") as mock_ah_class:
                 mock_ah_class.return_value.download_all_attachments.side_effect = (
                     _fake_download_all
                 )
@@ -137,7 +137,7 @@ class TestCLI:
         mock_jira_class, _ = _make_client_mock(issue_with_attachments)
 
         with patch("jarkdown.jarkdown.JiraApiClient", mock_jira_class):
-            with patch("jarkdown.jarkdown.AttachmentHandler") as mock_ah_class:
+            with patch("jarkdown.export_core.AttachmentHandler") as mock_ah_class:
                 mock_ah_class.return_value.download_all_attachments.side_effect = (
                     _fake_download_all
                 )
@@ -180,7 +180,7 @@ class TestCLI:
         mock_jira_class, _ = _make_client_mock(issue_no_attachments)
 
         with patch("jarkdown.jarkdown.JiraApiClient", mock_jira_class):
-            with patch("jarkdown.jarkdown.AttachmentHandler") as mock_ah_class:
+            with patch("jarkdown.export_core.AttachmentHandler") as mock_ah_class:
                 mock_ah_class.return_value.download_all_attachments = AsyncMock(return_value=[])
                 with patch("jarkdown.field_cache.FieldMetadataCache") as mock_fmc:
                     mock_fmc.return_value.is_stale.return_value = False
@@ -310,7 +310,7 @@ class TestCLI:
         mock_jira_class, _ = _make_client_mock(issue_no_description)
 
         with patch("jarkdown.jarkdown.JiraApiClient", mock_jira_class):
-            with patch("jarkdown.jarkdown.AttachmentHandler") as mock_ah_class:
+            with patch("jarkdown.export_core.AttachmentHandler") as mock_ah_class:
                 mock_ah_class.return_value.download_all_attachments = AsyncMock(return_value=[])
                 with patch("jarkdown.field_cache.FieldMetadataCache") as mock_fmc:
                     mock_fmc.return_value.is_stale.return_value = False
@@ -331,7 +331,7 @@ class TestCLI:
         mock_jira_class, _ = _make_client_mock(issue_with_comments)
 
         with patch("jarkdown.jarkdown.JiraApiClient", mock_jira_class):
-            with patch("jarkdown.jarkdown.AttachmentHandler") as mock_ah_class:
+            with patch("jarkdown.export_core.AttachmentHandler") as mock_ah_class:
                 mock_ah_class.return_value.download_all_attachments.side_effect = (
                     _fake_download_all
                 )
@@ -381,7 +381,7 @@ class TestCLI:
         mock_jira_class, _ = _make_client_mock(issue_with_adf_media)
 
         with patch("jarkdown.jarkdown.JiraApiClient", mock_jira_class):
-            with patch("jarkdown.jarkdown.AttachmentHandler") as mock_ah_class:
+            with patch("jarkdown.export_core.AttachmentHandler") as mock_ah_class:
                 mock_ah_class.return_value.download_all_attachments.side_effect = (
                     _fake_download_all
                 )
@@ -421,7 +421,7 @@ class TestCLI:
         mock_jira_class, _ = _make_client_mock(issue_no_attachments)
 
         with patch("jarkdown.jarkdown.JiraApiClient", mock_jira_class):
-            with patch("jarkdown.jarkdown.AttachmentHandler") as mock_ah_class:
+            with patch("jarkdown.export_core.AttachmentHandler") as mock_ah_class:
                 mock_ah_class.return_value.download_all_attachments = AsyncMock(return_value=[])
                 with patch("jarkdown.field_cache.FieldMetadataCache") as mock_fmc:
                     mock_fmc.return_value.is_stale.return_value = False

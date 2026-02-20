@@ -7,7 +7,6 @@ downloaded locally and referenced inline.
 """
 
 import asyncio
-import json
 import os
 import re
 import sys
@@ -20,9 +19,8 @@ from getpass import getpass
 from dotenv import load_dotenv
 
 from .jira_api_client import JiraApiClient
-from .attachment_handler import AttachmentHandler
-from .markdown_converter import MarkdownConverter
 from .bulk_exporter import BulkExporter
+from .export_core import perform_export
 from .exceptions import (
     JarkdownError,
 )
@@ -120,70 +118,26 @@ async def export_issue(api_client, issue_key, output_dir=None,
     """
     logger = logging.getLogger(__name__)
 
-    # Fetch issue data (async)
-    issue_data = await api_client.fetch_issue(issue_key)
-
-    # Determine output directory
+    # Resolve output path
     if output_dir:
         output_path = Path(output_dir) / issue_key
     else:
         output_path = Path.cwd() / issue_key
 
-    output_path.mkdir(parents=True, exist_ok=True)
-
-    # Download attachments
-    attachment_handler = AttachmentHandler(api_client)
-    attachments = issue_data.get("fields", {}).get("attachment", [])
-    downloaded_attachments = await attachment_handler.download_all_attachments(
-        attachments, output_path
+    output_path = await perform_export(
+        api_client,
+        issue_key,
+        output_path,
+        refresh_fields=refresh_fields,
+        include_fields=include_fields,
+        exclude_fields=exclude_fields,
+        include_json=include_json,
     )
 
-    # Convert to markdown
-    markdown_converter = MarkdownConverter(api_client.base_url, api_client.domain)
-
-    # Set up field metadata cache and config
-    from .field_cache import FieldMetadataCache
-    from .config_manager import ConfigManager
-
-    field_cache = FieldMetadataCache(api_client.domain)
-    # Async-aware field refresh: call fetch_fields directly to avoid sync wrapper
-    if refresh_fields or field_cache.is_stale():
-        try:
-            fields = await api_client.fetch_fields()
-            field_cache.save(fields)
-            logger.info(f"Field metadata cached ({len(fields)} fields)")
-        except Exception as e:
-            logger.warning(f"Failed to refresh field metadata: {e}")
-
-    config_manager = ConfigManager()
-    field_filter = config_manager.get_field_filter(
-        cli_include=include_fields,
-        cli_exclude=exclude_fields,
-    )
-
-    markdown_content = markdown_converter.compose_markdown(
-        issue_data, downloaded_attachments,
-        field_cache=field_cache, field_filter=field_filter,
-    )
-
-    # Write raw JSON response (opt-in)
+    logger.info("\nSuccessfully exported %s to %s", issue_key, output_path)
     if include_json:
-        json_file = output_path / f"{issue_key}.json"
-        with open(json_file, "w", encoding="utf-8") as f:
-            json.dump(issue_data, f, indent=2, ensure_ascii=False)
-
-    # Write markdown file
-    markdown_file = output_path / f"{issue_key}.md"
-    with open(markdown_file, "w", encoding="utf-8") as f:
-        f.write(markdown_content)
-
-    logger.info(f"\nSuccessfully exported {issue_key} to {output_path}")
-    if include_json:
-        json_file = output_path / f"{issue_key}.json"
-        logger.info(f"  - Raw JSON: {json_file}")
-    logger.info(f"  - Markdown file: {markdown_file}")
-    if downloaded_attachments:
-        logger.info(f"  - Downloaded {len(downloaded_attachments)} attachment(s)")
+        logger.info("  - Raw JSON: %s", output_path / f"{issue_key}.json")
+    logger.info("  - Markdown file: %s", output_path / f"{issue_key}.md")
 
     return output_path
 
